@@ -11,12 +11,14 @@ export default function NameInput() {
 
   function requestMicAccess() {
     navigator.mediaDevices.getUserMedia({
-        audio: true
-      })
+      video: true, audio: true
+    })
       .then(function(stream) {
+        console.log('Stream received in NameInput')
         setMicAccess('granted')
       })
       .catch(function(err) {
+        console.log(err)
         setMicAccess('denied')
       })
   };
@@ -32,10 +34,10 @@ export default function NameInput() {
         <input placeholder="Your Name" onChange={e => setUserName(e.target.value)} />
       </div>
       <div style={{marginTop: 20}}>
-        <button success={micAccess === 'granted'} disabled={micAccess === 'granted'} fullWidth onClick={requestMicAccess}>Allow Microphone Access</button>
+        <button disabled={micAccess === 'granted'} onClick={requestMicAccess}>Allow Microphone Access</button>
       </div>
       <div style={{marginTop: 20}}>
-        <button outline={micAccess !== 'granted'} disabled={micAccess !== 'granted'} big fullWidth onClick={createRoom}>Create Room</button>
+        <button disabled={micAccess !== 'granted'} onClick={createRoom}>Create Room</button>
       </div>
     </>
   )

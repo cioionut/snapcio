@@ -6,14 +6,10 @@ import { useRouter } from 'next/router';
 
 import { PeerContextProvider, PeerContext } from '../contexts/PeerContext';
 
+const getUserMedia = navigator.mediaDevices.getUserMedia || navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia'];
+
 
 export default function Call() {
-
-  let getUserMedia;
-  if (typeof window !== 'undefined') {
-    getUserMedia = navigator.mediaDevices.getUserMedia || navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia'];
-  }
-
   const router = useRouter();
 
   const otherVideo = React.useRef();
@@ -40,31 +36,32 @@ export default function Call() {
     if (connection && peer) {
       let dispose = () => {};
       const handler = (call) => {
-        getUserMedia(
-          { video: true, audio: true },
-          (stream) => {
-            showVideo(stream, selfVideo.current, true);
-            call.answer(stream);
-          },
-          (error) => {
-            console.log('Failed to get local stream', error);
-          },
-        );
+        getUserMedia({ 
+          video: true, audio: true 
+        })
+          .then((stream) => {
+              showVideo(stream, selfVideo.current, true);
+              call.answer(stream);
+          })
+          .catch((error) => {
+              console.log('Failed to get local stream', error);
+          });
 
         dispose = showStream(call, otherVideo.current);
       };
 
       if (connection['caller'] === peer.id) {
-        getUserMedia(
-          { video: true, audio: true },
-          (stream) => {
+        getUserMedia({ 
+          video: true, audio: true 
+        })
+          .then((stream) => {
+            console.log("Stream received")
             showVideo(stream, selfVideo.current, true);
             dispose = showStream(peer.call(connection.peer, stream), otherVideo.current);
-          },
-          (error) => {
-            console.log('Failed to get local stream', error);
-          },
-        );
+          })
+          .catch((error) => {
+              console.log('Failed to get local stream', error);
+          });
       } else {
         peer.on('call', handler);
       }
@@ -114,24 +111,37 @@ export default function Call() {
   }, [connection]);
 
   return (
-    <div>
-      <h1>
-        {peer?.id} ⬄ {connection?.peer} <button onClick={disconnect}>Hang up</button>
-      </h1>
-      <video ref={otherVideo} width={500} height={500} />
-      <video ref={selfVideo} width={200} height={200} />
-      <div>
-        {messages.map((msg) => (
-          <p key={msg.id} style={{ color: msg.self ? '#999' : '#222' }}>
-            <b>{msg.user}</b> ({msg.time}): {msg.message}
-          </p>
-        ))}
+    <>
+      <div className="container">
+        <h1>
+          {peer?.id} ⬄ {connection?.peer} <button onClick={disconnect}>Hang up</button>
+        </h1>
+        <video ref={otherVideo} width={500} height={500} />
+        <video ref={selfVideo} width={200} height={200} />
+        <div>
+          {messages.map((msg) => (
+            <p key={msg.id} style={{ color: msg.self ? '#999' : '#222' }}>
+              <b>{msg.user}</b> ({msg.time}): {msg.message}
+            </p>
+          ))}
+        </div>
+        <div>
+          <form onSubmit={submit}>
+            <input name="message" />
+            <button>Send</button>
+          </form>
+        </div>
       </div>
-      <form onSubmit={submit}>
-        <input name="message" />
-        <button>Send</button>
-      </form>
-    </div>
+      <style jsx>{`
+        .container {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding-bottom: 50px;
+        }
+      `}</style>
+    </>
   );
 };
 

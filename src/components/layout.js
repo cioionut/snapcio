@@ -28,7 +28,7 @@ export default function Layout ({ children }) {
           height: 100vh;
         }
         .app {
-          min-width: 500px;
+          padding: 30px;
           backdrop-filter: blur(20px);
           background: rgba(16 18 27 / 40%);
           border-radius: 14px;
