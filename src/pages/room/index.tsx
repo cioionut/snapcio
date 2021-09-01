@@ -44,7 +44,7 @@ function Cast({ user }) {
   const [ otherUserName, setOtherUserName ] = React.useState(null);
 
   const { peer, connection, setConnection } = React.useContext(PeerContext);
-  console.log(peer)
+  // console.log(peer)
 
   const callUser = () => {
     const connection = peer.connect(otherUserName);
