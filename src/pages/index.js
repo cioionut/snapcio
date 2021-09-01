@@ -28,8 +28,6 @@ export default function Home() {
 
         <NameInput/>
 
-        <video id="video" width="100%" height="100%" autoPlay></video>
-
       </main>
     </Layout>
   )

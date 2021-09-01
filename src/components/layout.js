@@ -1,6 +1,3 @@
-import Image from 'next/image'
-
-
 export default function Layout ({ children }) {
   return (
     <div className="container">
@@ -15,7 +12,7 @@ export default function Layout ({ children }) {
         >
           Powered by{' '}
           <span className="logo">
-            <Image src="/ionkom_logo_100_white.svg" alt="Vercel Logo" width={60} height={60} />
+            <img src="/ionkom_logo_100_white.svg" alt="Vercel Logo" width={60} height={60} />
           </span>
         </a>
       </footer>

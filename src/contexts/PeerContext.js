@@ -1,5 +1,5 @@
 import { useEffect, createContext, useState, useRef } from 'react';
-import Peer from 'peerjs';
+// import Peer from 'peerjs';
 
 
 export const PeerContext = createContext({
@@ -22,9 +22,11 @@ export const PeerContextProvider = ({ children, initialContext }) => {
   // console.log("Render: ", renderCounter)
 
   useEffect(() => { 
-    if (!peer) {
-      setPeer(new Peer(user)) 
-    }
+    import('peerjs').then(({ default: Peer }) => {
+      if (!peer) {
+        setPeer(new Peer(user)) 
+      }
+    });
   },  [user, peer]);
 
  

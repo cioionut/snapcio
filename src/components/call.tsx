@@ -1,17 +1,19 @@
 
 import * as React from 'react';
-import PeerJs from 'peerjs';
 import { useRouter } from 'next/router';
 
-let peer: PeerJs;
-let connection: PeerJs.DataConnection;
-const getUserMedia = navigator.getUserMedia || navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia'];
-
+// import PeerJs from 'peerjs';
 
 import { PeerContextProvider, PeerContext } from '../contexts/PeerContext';
 
 
 export default function Call() {
+
+  let getUserMedia;
+  if (typeof window !== 'undefined') {
+    getUserMedia = navigator.mediaDevices.getUserMedia || navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia'];
+  }
+
   const router = useRouter();
 
   const otherVideo = React.useRef();
@@ -37,7 +39,7 @@ export default function Call() {
   React.useEffect(() => {
     if (connection && peer) {
       let dispose = () => {};
-      const handler = (call: PeerJs.MediaConnection) => {
+      const handler = (call) => {
         getUserMedia(
           { video: true, audio: true },
           (stream) => {
@@ -140,7 +142,7 @@ function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean)
   video.onloadedmetadata = () => video.play();
 }
 
-function showStream(call: PeerJs.MediaConnection, otherVideo: HTMLVideoElement) {
+function showStream(call, otherVideo: HTMLVideoElement) {
   const handler = (remoteStream: MediaStream) => {
     showVideo(remoteStream, otherVideo, false);
   };

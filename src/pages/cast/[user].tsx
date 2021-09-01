@@ -1,10 +1,21 @@
 // import { useCallback, useState, useEffect } from 'react';
 import * as React from 'react';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 
-import PeerJs from 'peerjs';
+// import PeerJs from 'peerjs';
 
-import Call from '../../components/call';
+const Call = dynamic(
+  () => import('../../components/call'),
+  { ssr: false }
+);
+
+// const PeerJs = dynamic(
+//   () => import('peerjs'),
+//   { ssr: false }
+// );
+
+
 import { PeerContextProvider, PeerContext } from '../../contexts/PeerContext';
 
 
@@ -50,7 +61,7 @@ function Cast({ user }) {
     } else if (connection) {
       // router.push('/call');
     } else {
-      const handler = (connection: PeerJs.DataConnection) => {
+      const handler = (connection) => {
         connection['caller'] = connection.peer;
         setConnection(connection);
       };
