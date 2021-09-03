@@ -11,6 +11,7 @@ export default function Call() {
   const otherVideo = React.useRef();
   const selfVideo = React.useRef();
   const [messages, setMessages] = React.useState([]);
+  const [localStream, setLocalStream] = React.useState();
   // const [getUserMedia, setGetUserMedia] = React.useState(null);
   const {peer, connection, setConnection} = React.useContext(PeerContext);
   const {
@@ -33,40 +34,38 @@ export default function Call() {
   );
 
   React.useEffect(() => {
-    if (connection && peer) {
+    if (selfVideo)
+    startMediaStream()
+      .then((stream) => {
+          showVideo(stream, selfVideo.current, true);
+          setLocalStream(stream);
+      })
+      .catch((error) => {
+          console.log('Failed to get local stream', error);
+      });
+  }, []);
+
+  React.useEffect(() => {
+    if (connection && peer && otherVideo && localStream) {
       let dispose = () => {};
       const handler = (call) => {
-        startMediaStream()
-          .then((stream) => {
-              showVideo(stream, selfVideo.current, true);
-              call.answer(stream);
-          })
-          .catch((error) => {
-              console.log('Failed to get local stream', error);
-          });
-
+        call.answer(localStream)
         dispose = showStream(call, otherVideo.current);
       };
-
       if (connection['caller'] === peer.id) {
-        startMediaStream()
-          .then((stream) => {
-            showVideo(stream, selfVideo.current, true);
-            dispose = showStream(peer.call(connection.peer, stream), otherVideo.current);
-          })
-          .catch((error) => {
-              console.log('Failed to get local stream', error);
-          });
+
+        // console.log('make call')
+        const call = peer.call(connection.peer, localStream);
+        dispose = showStream(call, otherVideo.current);
       } else {
         peer.on('call', handler);
       }
-
       return () => {
         peer.off('call', handler);
         dispose();
       };
     }
-  }, [connection, peer]);
+  }, [connection, peer, otherVideo, localStream]);
 
   React.useEffect(() => {
     if (!connection) {
@@ -107,6 +106,7 @@ export default function Call() {
 
 
   function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
+    // console.log("Should play stream", video);
     video.srcObject = stream;
     video.volume = muted ? 0 : 1;
     video.onloadedmetadata = () => video.play();
@@ -114,6 +114,7 @@ export default function Call() {
   
   function showStream(call, otherVideo: HTMLVideoElement) {
     const handler = (remoteStream: MediaStream) => {
+      // console.log("Remote stream: ", remoteStream)
       showVideo(remoteStream, otherVideo, false);
     };
     call.on('stream', handler);

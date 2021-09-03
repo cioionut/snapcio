@@ -46,6 +46,8 @@ function Cast({ user }) {
 
   const { peer, connection, setConnection } = React.useContext(PeerContext);
 
+  // console.log("Peer from context:", peer)
+
   const callUser = () => {
     const connection = peer.connect(otherUserName);
     connection['caller'] = peer.id;
