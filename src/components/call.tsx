@@ -1,21 +1,21 @@
-
 import * as React from 'react';
-import { useRouter } from 'next/router';
 
 // import PeerJs from 'peerjs';
 
-import { PeerContextProvider, PeerContext } from '../contexts/PeerContext';
-
-const getUserMedia = navigator.mediaDevices.getUserMedia || navigator['webkitGetUserMedia'] || navigator['mozGetUserMedia'];
+import { PeerContext } from '../contexts/PeerContext';
+import { StreamContext } from '../contexts/StreamContext';
 
 
 export default function Call() {
-  const router = useRouter();
 
   const otherVideo = React.useRef();
   const selfVideo = React.useRef();
   const [messages, setMessages] = React.useState([]);
+  // const [getUserMedia, setGetUserMedia] = React.useState(null);
   const {peer, connection, setConnection} = React.useContext(PeerContext);
+  const {
+    startMediaStream,
+  } = React.useContext(StreamContext)
 
   const appendMessage = React.useCallback(
     (message: string, self: boolean) =>
@@ -36,9 +36,7 @@ export default function Call() {
     if (connection && peer) {
       let dispose = () => {};
       const handler = (call) => {
-        getUserMedia({ 
-          video: true, audio: true 
-        })
+        startMediaStream()
           .then((stream) => {
               showVideo(stream, selfVideo.current, true);
               call.answer(stream);
@@ -51,11 +49,8 @@ export default function Call() {
       };
 
       if (connection['caller'] === peer.id) {
-        getUserMedia({ 
-          video: true, audio: true 
-        })
+        startMediaStream()
           .then((stream) => {
-            console.log("Stream received")
             showVideo(stream, selfVideo.current, true);
             dispose = showStream(peer.call(connection.peer, stream), otherVideo.current);
           })
@@ -110,6 +105,22 @@ export default function Call() {
     setConnection(undefined);
   }, [connection]);
 
+
+  function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
+    video.srcObject = stream;
+    video.volume = muted ? 0 : 1;
+    video.onloadedmetadata = () => video.play();
+  }
+  
+  function showStream(call, otherVideo: HTMLVideoElement) {
+    const handler = (remoteStream: MediaStream) => {
+      showVideo(remoteStream, otherVideo, false);
+    };
+    call.on('stream', handler);
+  
+    return () => call.off('stream', handler);
+  }
+
   return (
     <>
       <div className="container">
@@ -144,19 +155,3 @@ export default function Call() {
     </>
   );
 };
-
-
-function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
-  video.srcObject = stream;
-  video.volume = muted ? 0 : 1;
-  video.onloadedmetadata = () => video.play();
-}
-
-function showStream(call, otherVideo: HTMLVideoElement) {
-  const handler = (remoteStream: MediaStream) => {
-    showVideo(remoteStream, otherVideo, false);
-  };
-  call.on('stream', handler);
-
-  return () => call.off('stream', handler);
-}

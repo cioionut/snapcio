@@ -17,6 +17,7 @@ const Call = dynamic(
 
 
 import { PeerContextProvider, PeerContext } from '../../contexts/PeerContext';
+import { StreamContextProvider } from '../../contexts/StreamContext';
 
 
 export default function CastMain () {
@@ -29,22 +30,21 @@ export default function CastMain () {
 
 
   return (
-    <PeerContextProvider initialContext={{
-      user: user
-    }}>
-      <Cast user={user} />
-    </PeerContextProvider>
+    <StreamContextProvider>
+      <PeerContextProvider initialContext={{
+        user: user
+      }}>
+        <Cast user={user} />
+      </PeerContextProvider>
+    </StreamContextProvider>
   )
 }
 
 
 function Cast({ user }) {
-  const router = useRouter();
-
   const [ otherUserName, setOtherUserName ] = React.useState(null);
 
   const { peer, connection, setConnection } = React.useContext(PeerContext);
-  // console.log(peer)
 
   const callUser = () => {
     const connection = peer.connect(otherUserName);
@@ -54,13 +54,7 @@ function Cast({ user }) {
 
 
   React.useEffect(() => {
-
-    if (!peer) {
-      // console.log(peer);
-      // router.push('/');
-    } else if (connection) {
-      // router.push('/call');
-    } else {
+    if (peer && !connection) {
       const handler = (connection) => {
         connection['caller'] = connection.peer;
         setConnection(connection);
@@ -68,7 +62,7 @@ function Cast({ user }) {
       peer.on('connection', handler);
       return () => peer.off('connection', handler);
     }
-  }, [peer, connection, router]);
+  }, [peer, connection, setConnection]);
 
   return (
     <div>

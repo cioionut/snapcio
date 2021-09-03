@@ -23,14 +23,15 @@ export const PeerContextProvider = ({ children, initialContext }) => {
 
   useEffect(() => { 
     import('peerjs').then(({ default: Peer }) => {
-      if (!peer) {
-        console.log("Once:", peer, user)
+      if (!peer && user) {
+        // console.log("Once:", peer, user)
         setPeer(new Peer(user)) 
       }
+      // console.log("Twice:", peer, user)
     });
   },  [user, peer]);
 
- 
+
   return (
     <PeerContext.Provider value={{
       peer,

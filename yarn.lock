@@ -3014,10 +3014,20 @@
     "loose-envify" "^1.1.0"
     "object-assign" "^4.1.1"
 
-"sdp@^2.12.0", "sdp@^2.6.0":
+"sdp@^2.12.0":
   "integrity" "sha512-jhXqQAQVM+8Xj5EjJGVweuEzgtGWb3tmEEpl3CLP3cStInSbVHSg0QWOGQzNq8pSID4JkpeV2mPqlMDLrm0/Vw=="
   "resolved" "https://registry.npmjs.org/sdp/-/sdp-2.12.0.tgz"
   "version" "2.12.0"
+
+"sdp@^2.6.0":
+  "integrity" "sha512-jhXqQAQVM+8Xj5EjJGVweuEzgtGWb3tmEEpl3CLP3cStInSbVHSg0QWOGQzNq8pSID4JkpeV2mPqlMDLrm0/Vw=="
+  "resolved" "https://registry.npmjs.org/sdp/-/sdp-2.12.0.tgz"
+  "version" "2.12.0"
+
+"sdp@^3.0.2":
+  "integrity" "sha512-8EkfckS+XZQaPLyChu4ey7PghrdcraCVNpJe2Gfdi2ON1ylQ7OasuKX+b37R9slnRChwIAiQgt+oj8xXGD8x+A=="
+  "resolved" "https://registry.npmjs.org/sdp/-/sdp-3.0.3.tgz"
+  "version" "3.0.3"
 
 "semver@^6.0.0", "semver@^6.3.0":
   "integrity" "sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw=="
@@ -3566,6 +3576,13 @@
   dependencies:
     "rtcpeerconnection-shim" "^1.2.15"
     "sdp" "^2.12.0"
+
+"webrtc-adapter@^8.1.0":
+  "integrity" "sha512-I+y/LWBiGYPVhIb8Ww7nyoNWhrCYENeGoRvZuyytLn/h+ahDBgItvuIfMdzT+xhOnjLIMVkOykttGJPv1dr6kA=="
+  "resolved" "https://registry.npmjs.org/webrtc-adapter/-/webrtc-adapter-8.1.0.tgz"
+  "version" "8.1.0"
+  dependencies:
+    "sdp" "^3.0.2"
 
 "whatwg-url@^7.0.0":
   "integrity" "sha512-WUu7Rg1DroM7oQvGWfOiAK21n74Gg+T4elXEQYkOhtyLeWiJFoOGLXPKI/9gzIie9CtwVLm8wtw6YJdKyxSjeg=="
