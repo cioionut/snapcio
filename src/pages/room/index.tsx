@@ -17,7 +17,7 @@ const Call = dynamic(
 
 
 import { PeerContextProvider, PeerContext } from '../../contexts/PeerContext';
-import { StreamContextProvider } from '../../contexts/StreamContext';
+import { StreamContextProvider, StreamContext } from '../../contexts/StreamContext';
 
 
 export default function CastMain () {
@@ -42,10 +42,14 @@ export default function CastMain () {
 
 
 function Cast({ user }) {
+  const selfVideo = React.useRef();
+  const otherVideo = React.useRef();
+
+  const [localStream, setLocalStream] = React.useState(null);
   const [ otherUserName, setOtherUserName ] = React.useState(null);
 
   const { peer, connection, setConnection } = React.useContext(PeerContext);
-
+  const { startMediaStream } = React.useContext(StreamContext)
   // console.log("Peer from context:", peer)
 
   const callUser = () => {
@@ -66,16 +70,78 @@ function Cast({ user }) {
     }
   }, [peer, connection, setConnection]);
 
-  return (
-    <div>
-      <h1>Hi, {peer?.id}</h1>
-      <label>Name to call:</label>
-      <input name="name" onChange={e => setOtherUserName(e.target.value)} />
-      <button onClick={ callUser }>Call</button>
 
-      {
-        connection && <Call/>
-      }
+  React.useEffect(() => {
+    // navigator.mediaDevices.getUserMedia(
+    //   { video: true, audio: true })
+    //   .then((stream) => {
+    //     showVideo(stream, selfVideo.current, true);
+    //     setLocalStream(stream);
+    //   })
+    //   .catch((error) => {
+    //       console.log('Failed to get local stream', error);
+    //     },
+    //   )
+    startMediaStream()
+      .then((stream) => {
+        showVideo(stream, selfVideo.current, true);
+        setLocalStream(stream);
+      })
+      .catch((error) => {
+        console.log('Failed to get local stream', error);
+      });
+  }, []);
+
+  function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
+    console.log("Should play stream", video);
+    video.srcObject = stream;
+    video.volume = muted ? 0 : 1;
+    video.onloadedmetadata = () => video.play();
+  }
+
+  return (
+    <>
+    <h1>Hi, {peer?.id}</h1>
+    <div className="container">
+      <div className="container__half">
+        <div className="video">
+          <video ref={otherVideo} width={300} />
+        </div>
+        <div className="video">
+          <video ref={selfVideo} width={300} />
+        </div>
+      </div>
+
+      <div className="container__half">
+        <div>
+          <label>Name to call:</label>
+          <input name="name" onChange={e => setOtherUserName(e.target.value)} />
+          <button onClick={ callUser }>Call</button>
+        </div>
+        {
+          connection && <Call localStream={ localStream } otherVideo={ otherVideo } />
+        }
+      </div>
+
     </div>
+    <style jsx>{`
+      .container {
+        display: flex;
+      }
+      .container__half {
+        flex: 1;
+      }
+      .video {
+        background-image: url("/broken_stream.gif");
+        background-repeat: no-repeat;
+
+        // background-color: #cccccc; /* Used if the image is unavailable */
+        width: 300px;
+        height: 224px; /* You must set a specified height */
+        
+        margin-bottom: 15px;
+      }
+    `}</style>
+    </>
   );
 };

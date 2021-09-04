@@ -1,22 +1,15 @@
 import * as React from 'react';
 
-// import PeerJs from 'peerjs';
-
 import { PeerContext } from '../contexts/PeerContext';
-import { StreamContext } from '../contexts/StreamContext';
 
 
-export default function Call() {
+export default function Call({ localStream, otherVideo }) {
 
-  const otherVideo = React.useRef();
-  const selfVideo = React.useRef();
   const [messages, setMessages] = React.useState([]);
-  const [localStream, setLocalStream] = React.useState();
+  // const [localStream, setLocalStream] = React.useState(null);
   // const [getUserMedia, setGetUserMedia] = React.useState(null);
   const {peer, connection, setConnection} = React.useContext(PeerContext);
-  const {
-    startMediaStream,
-  } = React.useContext(StreamContext)
+
 
   const appendMessage = React.useCallback(
     (message: string, self: boolean) =>
@@ -34,27 +27,14 @@ export default function Call() {
   );
 
   React.useEffect(() => {
-    if (selfVideo)
-    startMediaStream()
-      .then((stream) => {
-          showVideo(stream, selfVideo.current, true);
-          setLocalStream(stream);
-      })
-      .catch((error) => {
-          console.log('Failed to get local stream', error);
-      });
-  }, []);
-
-  React.useEffect(() => {
     if (connection && peer && otherVideo && localStream) {
       let dispose = () => {};
       const handler = (call) => {
         call.answer(localStream)
         dispose = showStream(call, otherVideo.current);
+        connection.on('close', () => closeVideo(otherVideo.current))
       };
       if (connection['caller'] === peer.id) {
-
-        // console.log('make call')
         const call = peer.call(connection.peer, localStream);
         dispose = showStream(call, otherVideo.current);
       } else {
@@ -102,8 +82,13 @@ export default function Call() {
   const disconnect = React.useCallback(() => {
     connection.close();
     setConnection(undefined);
+    closeVideo(otherVideo.current);
   }, [connection]);
 
+
+  function closeVideo(video: HTMLVideoElement) {
+    video.srcObject = null;
+  }
 
   function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
     // console.log("Should play stream", video);
@@ -128,8 +113,6 @@ export default function Call() {
         <h1>
           {peer?.id} ⬄ {connection?.peer} <button onClick={disconnect}>Hang up</button>
         </h1>
-        <video ref={otherVideo} width={500} height={500} />
-        <video ref={selfVideo} width={200} height={200} />
         <div>
           {messages.map((msg) => (
             <p key={msg.id} style={{ color: msg.self ? '#999' : '#222' }}>
@@ -139,7 +122,7 @@ export default function Call() {
         </div>
         <div>
           <form onSubmit={submit}>
-            <input name="message" />
+            <input name="message" autoComplete="off" />
             <button>Send</button>
           </form>
         </div>
