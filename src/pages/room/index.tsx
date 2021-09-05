@@ -58,7 +58,6 @@ function Cast({ user }) {
     setConnection(connection);
   }
 
-
   React.useEffect(() => {
     if (peer && !connection) {
       const handler = (connection) => {
@@ -72,16 +71,6 @@ function Cast({ user }) {
 
 
   React.useEffect(() => {
-    // navigator.mediaDevices.getUserMedia(
-    //   { video: true, audio: true })
-    //   .then((stream) => {
-    //     showVideo(stream, selfVideo.current, true);
-    //     setLocalStream(stream);
-    //   })
-    //   .catch((error) => {
-    //       console.log('Failed to get local stream', error);
-    //     },
-    //   )
     startMediaStream()
       .then((stream) => {
         showVideo(stream, selfVideo.current, true);
