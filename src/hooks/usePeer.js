@@ -1,57 +1,60 @@
-import { useEffect, useState } from 'react'
-import uuid from 'uuid-random'
-import Peer from 'peerjs'
+import { useEffect, useState } from 'react';
 
 export default function usePeer(config = {}) {
   const {
-    peerId: paramPeerId,
     onConnectionOpen,
-  } = config
+    serverConfig
+  } = config;
 
   const [peerInstance, setPeerInstance] = useState(null)
   const [peerStatus, setPeerStatus] = useState()
   const [peerId, setPeerId] = useState(null)
 
   const destroyPeerInstance = () => {
+    console.log(`Distroyed peer ${peerInstance}`)
+
     if (!peerInstance) return
-    peerInstance.disconnect()
-    peerInstance.destroy()
+    peerInstance.disconnect();
+    peerInstance.destroy();
     setPeerInstance(null)
   }
 
   useEffect(() => {    
-    const peer = peerInstance ? peerInstance : new Peer(paramPeerId ? paramPeerId : uuid())
+    import('peerjs').then(({ default: Peer }) => {
+      const peer = peerInstance ? peerInstance : new Peer(serverConfig)
 
-    peer.on('open', () => {
-      console.log('usePeer::Connection Open')
-      setPeerInstance(peer)
-      setPeerId(peer.id)
-      setPeerStatus('open')
-      onConnectionOpen?.(peer)
-    })
+      peer.on('open', () => {
+        console.log('usePeer::Connection Open')
+        setPeerInstance(peer)
+        setPeerId(peer.id)
+        setPeerStatus('open')
+        onConnectionOpen?.(peer)
+      })
+  
+      peer.on('disconnected', () => {
+        console.log('usePeer::Peer desconnected')
+        setPeerStatus('disconnected')
+        destroyPeerInstance()
+      })
+  
+      peer.on('close', () => {
+        console.log('usePeer::Peer closed remotetly')
+        destroyPeerInstance()
+        setPeerStatus('close')
+      })
 
-    peer.on('disconnected', () => {
-      console.log('usePeer::Peer desconnected')
-      setPeerStatus('disconnected')
-      destroyPeerInstance()
-    })
-
-    peer.on('close', () => {
-      console.log('usePeer::Peer closed remotetly')
-      destroyPeerInstance()
-      setPeerStatus('close')
-    })
-
-
-    peer.on('error', (error) => {
-      console.log('usePeer::Peer error', error)
-      setPeerStatus('error')
-      destroyPeerInstance()
-    })
-
+      peer.on('error', (error) => {
+        console.log('usePeer::Peer error', error, error.type)
+        setPeerStatus('error')
+        destroyPeerInstance()
+      })
+    });
+    
     return () => {
+      console.log("Cleanup usePeer")
       destroyPeerInstance()
     }
+
   }, [])
 
   return [peerInstance, peerId, peerStatus]

@@ -10,7 +10,6 @@ export default function Call({ localStream, otherVideo }) {
   // const [getUserMedia, setGetUserMedia] = React.useState(null);
   const {peer, connection, setConnection} = React.useContext(PeerContext);
 
-
   const appendMessage = React.useCallback(
     (message: string, self: boolean) =>
       setMessages((msgs) => [
@@ -40,6 +39,7 @@ export default function Call({ localStream, otherVideo }) {
       } else {
         peer.on('call', handler);
       }
+      // returned function will be called on component unmount
       return () => {
         peer.off('call', handler);
         dispose();
@@ -87,7 +87,8 @@ export default function Call({ localStream, otherVideo }) {
 
 
   function closeVideo(video: HTMLVideoElement) {
-    video.srcObject = null;
+    if (video)
+      video.srcObject = null;
   }
 
   function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {

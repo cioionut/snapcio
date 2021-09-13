@@ -1,6 +1,5 @@
 import { useEffect, createContext, useState, useRef } from 'react';
-// import Peer from 'peerjs';
-
+import usePeer from '../hooks/usePeer';
 
 export const PeerContext = createContext({
   peer: null, // PeerInstance
@@ -14,28 +13,32 @@ export const PeerContextProvider = ({ children, initialContext }) => {
   const {
     user,
   } = initialContext;
+  const serverConfig = process.env.NEXT_PUBLIC_ENV === 'production'
+  ? undefined 
+  : {
+    host: 'localhost',
+    port: 9000,
+    path: '/myapp'
+  }
 
-  const [peer, setPeer] = useState(null);
+  const [peer, peerId, peerStatus] = usePeer({
+    onConnectionOpen: (peer) => {},
+    serverConfig
+  });
+
+  // const [peer, setPeer] = useState(null);
+  // useEffect(() => { 
+  //   import('peerjs').then(({ default: Peer }) => {
+  //     if (!peer && user) {
+  //       setPeer(new Peer(user, serverConfig));
+  //     }
+  //   });
+  // },  [user, peer]);
+
   const [connection, setConnection] = useState(null);
   // let renderCounter = useRef(0);
   // renderCounter = renderCounter.current+1
   // console.log("Render: ", renderCounter)
-  const serverConfig = process.env.NEXT_PUBLIC_ENV === 'production'
-                  ? undefined 
-                  : {
-                    host: 'localhost',
-                    port: 9000,
-                    path: '/myapp'
-                  }
-
-  useEffect(() => { 
-    import('peerjs').then(({ default: Peer }) => {
-      if (!peer && user) {
-        setPeer(new Peer(user, serverConfig));
-      }
-    });
-  },  [user, peer]);
-
 
   return (
     <PeerContext.Provider value={{

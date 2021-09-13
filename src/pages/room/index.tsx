@@ -30,13 +30,18 @@ export default function CastMain () {
 
 
   return (
-    <StreamContextProvider>
-      <PeerContextProvider initialContext={{
-        user: user
-      }}>
-        <Cast user={user} />
-      </PeerContextProvider>
-    </StreamContextProvider>
+    <>
+    { user &&
+        <StreamContextProvider>
+        <PeerContextProvider initialContext={{
+          user: user
+        }}>
+          <Cast user={user} />
+        </PeerContextProvider>
+      </StreamContextProvider>
+    }
+    </>
+
   )
 }
 
@@ -45,12 +50,12 @@ function Cast({ user }) {
   const selfVideo = React.useRef();
   const otherVideo = React.useRef();
 
-  const [localStream, setLocalStream] = React.useState(null);
+  const [ localStream, setLocalStream ] = React.useState(null);
   const [ otherUserName, setOtherUserName ] = React.useState(null);
 
   const { peer, connection, setConnection } = React.useContext(PeerContext);
   const { startMediaStream } = React.useContext(StreamContext)
-  // console.log("Peer from context:", peer)
+  console.log("Peer from context:", peer)
 
   const callUser = () => {
     const connection = peer.connect(otherUserName);
@@ -59,13 +64,20 @@ function Cast({ user }) {
   }
 
   React.useEffect(() => {
+    const handler = (connection) => {
+      connection['caller'] = connection.peer;
+      setConnection(connection);
+    };
     if (peer && !connection) {
-      const handler = (connection) => {
-        connection['caller'] = connection.peer;
-        setConnection(connection);
-      };
       peer.on('connection', handler);
-      return () => peer.off('connection', handler);
+    };
+    // returned function will be called on component unmount
+    return () => {
+      if (peer) peer.off('connection', handler);
+      if (connection) {
+        connection.close();
+        console.log("Cleanup DataConnection");
+      }
     }
   }, [peer, connection, setConnection]);
 
@@ -75,6 +87,11 @@ function Cast({ user }) {
       .then((stream) => {
         showVideo(stream, selfVideo.current, true);
         setLocalStream(stream);
+        // returned function will be called on component unmount
+        return () => {
+          console.log("Cleanup media stream tracks")     
+          stream.getTracks().forEach((track) => track.stop());
+        }
       })
       .catch((error) => {
         console.log('Failed to get local stream', error);
