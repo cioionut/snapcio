@@ -1,20 +1,11 @@
-// import { useCallback, useState, useEffect } from 'react';
-import * as React from 'react';
+import { useContext, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
-
-// import PeerJs from 'peerjs';
 
 const Call = dynamic(
   () => import('../../components/call'),
   { ssr: false }
 );
-
-// const PeerJs = dynamic(
-//   () => import('peerjs'),
-//   { ssr: false }
-// );
-
 
 import { PeerContextProvider, PeerContext } from '../../contexts/PeerContext';
 import { StreamContextProvider, StreamContext } from '../../contexts/StreamContext';
@@ -47,59 +38,63 @@ export default function CastMain () {
 
 
 function Cast({ user }) {
-  const selfVideo = React.useRef();
-  const otherVideo = React.useRef();
+  const selfVideo = useRef();
+  const otherVideo = useRef();
 
-  const [ localStream, setLocalStream ] = React.useState(null);
-  const [ otherUserName, setOtherUserName ] = React.useState(null);
+  const [ localStream, setLocalStream ] = useState(null);
+  const [ otherUserName, setOtherUserName ] = useState(null);
 
-  const { peer, connection, setConnection } = React.useContext(PeerContext);
-  const { startMediaStream } = React.useContext(StreamContext)
-  console.log("Peer from context:", peer)
+  const { peer, dataConnection, setDataConnection } = useContext(PeerContext);
+  const { startMediaStream } = useContext(StreamContext);
 
   const callUser = () => {
     const connection = peer.connect(otherUserName);
     connection['caller'] = peer.id;
-    setConnection(connection);
+    setDataConnection(connection);
   }
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = (connection) => {
       connection['caller'] = connection.peer;
-      setConnection(connection);
+      setDataConnection(connection);
     };
-    if (peer && !connection) {
+    if (peer && !dataConnection) {
       peer.on('connection', handler);
     };
     // returned function will be called on component unmount
     return () => {
       if (peer) peer.off('connection', handler);
-      if (connection) {
-        connection.close();
-        console.log("Cleanup DataConnection");
+      if (dataConnection) {
+        dataConnection.close();
+        console.log("Cleanup dataConnection");
+      };
+    }
+  }, [peer, dataConnection]);
+
+
+  useEffect(() => {
+    if (!localStream)
+      startMediaStream()
+        .then((stream) => {
+          showVideo(stream, selfVideo.current, true);
+          setLocalStream(stream);
+        })
+        .catch((error) => {
+          console.log('Failed to get local stream', error);
+        });
+
+    // returned function will be called on component unmount
+    return () => {
+      console.log(`Trying to clean media ${localStream}`);
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        console.log("Cleanup media stream tracks");
       }
     }
-  }, [peer, connection, setConnection]);
-
-
-  React.useEffect(() => {
-    startMediaStream()
-      .then((stream) => {
-        showVideo(stream, selfVideo.current, true);
-        setLocalStream(stream);
-        // returned function will be called on component unmount
-        return () => {
-          console.log("Cleanup media stream tracks")     
-          stream.getTracks().forEach((track) => track.stop());
-        }
-      })
-      .catch((error) => {
-        console.log('Failed to get local stream', error);
-      });
-  }, []);
+  }, [localStream]);
 
   function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
-    console.log("Should play stream", video);
+    // console.log("Should play stream", video);
     video.srcObject = stream;
     video.volume = muted ? 0 : 1;
     video.onloadedmetadata = () => video.play();
@@ -125,7 +120,7 @@ function Cast({ user }) {
           <button onClick={ callUser }>Call</button>
         </div>
         {
-          connection && <Call localStream={ localStream } otherVideo={ otherVideo } />
+          dataConnection && <Call localStream={ localStream } otherVideo={ otherVideo } />
         }
       </div>
 

@@ -6,9 +6,9 @@ import { PeerContext } from '../contexts/PeerContext';
 export default function Call({ localStream, otherVideo }) {
 
   const [messages, setMessages] = React.useState([]);
-  // const [localStream, setLocalStream] = React.useState(null);
-  // const [getUserMedia, setGetUserMedia] = React.useState(null);
-  const {peer, connection, setConnection} = React.useContext(PeerContext);
+  const [mediaConnection, setMediaConnection] = React.useState(null);
+
+  const {peer, dataConnection, setDataConnection} = React.useContext(PeerContext);
 
   const appendMessage = React.useCallback(
     (message: string, self: boolean) =>
@@ -19,36 +19,48 @@ export default function Call({ localStream, otherVideo }) {
           message,
           self,
           time: new Date().toLocaleTimeString(),
-          user: self ? peer.id : connection.peer,
+          user: self ? peer.id : dataConnection.peer,
         },
       ]),
     [],
   );
 
   React.useEffect(() => {
-    if (connection && peer && otherVideo && localStream) {
+    if (dataConnection && peer && otherVideo && localStream) {
       let dispose = () => {};
-      const handler = (call) => {
-        call.answer(localStream)
-        dispose = showStream(call, otherVideo.current);
-        connection.on('close', () => closeVideo(otherVideo.current))
+      const handler = (mediaConn) => {
+        mediaConn.answer(localStream);
+        dispose = showStream(mediaConn, otherVideo.current);
+      
+        if (!mediaConnection) setMediaConnection(mediaConn);
+
+        mediaConn.on('close', () => {
+          console.log("mediaConnection closed remotely");
+          closeVideo(otherVideo.current);
+        });
       };
-      if (connection['caller'] === peer.id) {
-        const call = peer.call(connection.peer, localStream);
-        dispose = showStream(call, otherVideo.current);
+      if (dataConnection['caller'] === peer.id) {
+        const mediaConn = peer.call(dataConnection.peer, localStream);
+        if (!mediaConnection) setMediaConnection(mediaConn);
+
+        dispose = showStream(mediaConn, otherVideo.current);
       } else {
         peer.on('call', handler);
       }
       // returned function will be called on component unmount
       return () => {
+        if (mediaConnection) {
+          console.log("Call::close mediaConnection");
+          mediaConnection.close();
+        }
         peer.off('call', handler);
         dispose();
       };
     }
-  }, [connection, peer, otherVideo, localStream]);
+  }, [dataConnection, peer, otherVideo, localStream, mediaConnection]);
 
   React.useEffect(() => {
-    if (!connection) {
+    if (!dataConnection) {
       console.log("Not connection")
       // router.push('/chat');
     } else {
@@ -56,39 +68,43 @@ export default function Call({ localStream, otherVideo }) {
         appendMessage(message, false);
       };
       const closeHandler = () => {
-        setConnection(undefined);
+        console.log("Call::Clean dataConnection");
+        closeVideo(otherVideo.current);
+        setDataConnection(undefined);
       };
-      connection.on('data', dataHandler);
-      connection.on('close', closeHandler);
+      dataConnection.on('data', dataHandler);
+      dataConnection.on('close', closeHandler);
       return () => {
-        connection.off('data', dataHandler);
-        connection.off('close', closeHandler);
+        dataConnection.off('data', dataHandler);
+        dataConnection.off('close', closeHandler);
       };
     }
-  }, [connection]);
+  }, [dataConnection]);
 
   const submit = React.useCallback(
     (ev) => {
       const input = ev.currentTarget.elements.namedItem('message') as HTMLInputElement;
       const message = input.value;
       ev.preventDefault();
-      connection.send(message);
+      dataConnection.send(message);
       appendMessage(message, true);
       input.value = '';
     },
-    [connection],
+    [dataConnection],
   );
 
   const disconnect = React.useCallback(() => {
-    connection.close();
-    setConnection(undefined);
+    dataConnection.close();
+    setDataConnection(undefined);
     closeVideo(otherVideo.current);
-  }, [connection]);
+  }, [dataConnection]);
 
 
   function closeVideo(video: HTMLVideoElement) {
-    if (video)
+    if (video) {
+      video.pause();
       video.srcObject = null;
+    }
   }
 
   function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
@@ -98,21 +114,21 @@ export default function Call({ localStream, otherVideo }) {
     video.onloadedmetadata = () => video.play();
   }
   
-  function showStream(call, otherVideo: HTMLVideoElement) {
+  function showStream(mediaConn, otherVideo: HTMLVideoElement) {
     const handler = (remoteStream: MediaStream) => {
       // console.log("Remote stream: ", remoteStream)
       showVideo(remoteStream, otherVideo, false);
     };
-    call.on('stream', handler);
+    mediaConn.on('stream', handler);
   
-    return () => call.off('stream', handler);
+    return () => mediaConn.off('stream', handler);
   }
 
   return (
     <>
       <div className="container">
         <h1>
-          {peer?.id} ⬄ {connection?.peer} <button onClick={disconnect}>Hang up</button>
+          {peer?.id} ⬄ {dataConnection?.peer} <button onClick={disconnect}>Hang up</button>
         </h1>
         <div>
           {messages.map((msg) => (

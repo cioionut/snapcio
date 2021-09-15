@@ -11,8 +11,6 @@ export default function usePeer(config = {}) {
   const [peerId, setPeerId] = useState(null)
 
   const destroyPeerInstance = () => {
-    console.log(`Distroyed peer ${peerInstance}`)
-
     if (!peerInstance) return
     peerInstance.disconnect();
     peerInstance.destroy();
@@ -51,7 +49,7 @@ export default function usePeer(config = {}) {
     });
     
     return () => {
-      console.log("Cleanup usePeer")
+      console.log("usePeer::Cleanup peerInstance")
       destroyPeerInstance()
     }
 

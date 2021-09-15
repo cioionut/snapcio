@@ -1,10 +1,12 @@
-import { useEffect, createContext, useState, useRef } from 'react';
+import { createContext, useState } from 'react';
 import usePeer from '../hooks/usePeer';
 
 export const PeerContext = createContext({
   peer: null, // PeerInstance
-  connection: null, // connection
-  setConnection: (conn) => {}
+  peerId: null,
+  peerStatus: null,
+  dataConnection: null, // connection
+  setDataConnection: (conn) => {}
 });
 
 
@@ -26,16 +28,7 @@ export const PeerContextProvider = ({ children, initialContext }) => {
     serverConfig
   });
 
-  // const [peer, setPeer] = useState(null);
-  // useEffect(() => { 
-  //   import('peerjs').then(({ default: Peer }) => {
-  //     if (!peer && user) {
-  //       setPeer(new Peer(user, serverConfig));
-  //     }
-  //   });
-  // },  [user, peer]);
-
-  const [connection, setConnection] = useState(null);
+  const [dataConnection, setDataConnection] = useState(null);
   // let renderCounter = useRef(0);
   // renderCounter = renderCounter.current+1
   // console.log("Render: ", renderCounter)
@@ -43,8 +36,10 @@ export const PeerContextProvider = ({ children, initialContext }) => {
   return (
     <PeerContext.Provider value={{
       peer,
-      connection,
-      setConnection: setConnection
+      peerId,
+      peerStatus,
+      dataConnection,
+      setDataConnection
     }}>
       {children}
     </PeerContext.Provider>
