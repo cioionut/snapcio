@@ -38,8 +38,8 @@ export default function CastMain () {
 
 
 function Cast({ user }) {
-  const selfVideo = useRef();
-  const otherVideo = useRef();
+  const selfVideo = useRef(null);
+  const otherVideo = useRef(null);
 
   const [ localStream, setLocalStream ] = useState(null);
   const [ otherUserName, setOtherUserName ] = useState(null);
@@ -70,7 +70,6 @@ function Cast({ user }) {
       };
     }
   }, [peer, dataConnection]);
-
 
   useEffect(() => {
     if (!localStream)
@@ -105,11 +104,11 @@ function Cast({ user }) {
     <h1>Hi, {peer?.id}</h1>
     <div className="container">
       <div className="container__half">
-        <div className="video">
-          <video ref={otherVideo} width={300} />
+        <div>
+          <video className={dataConnection ? '' : 'video'} ref={otherVideo} width={400} height={300} />
         </div>
-        <div className="video">
-          <video ref={selfVideo} width={300} />
+        <div >
+          <video className={localStream  ? '' : 'video'} ref={selfVideo} width={200} height={150} />
         </div>
       </div>
 
@@ -137,8 +136,8 @@ function Cast({ user }) {
         background-repeat: no-repeat;
 
         // background-color: #cccccc; /* Used if the image is unavailable */
-        width: 300px;
-        height: 224px; /* You must set a specified height */
+        // width: 300px;
+        // height: 224px; /* You must set a specified height */
         
         margin-bottom: 15px;
       }
