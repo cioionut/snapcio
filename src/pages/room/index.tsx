@@ -1,11 +1,13 @@
 import { useContext, useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 
 const Call = dynamic(
   () => import('../../components/call'),
   { ssr: false }
 );
+const fetcher = (url) => fetch(url).then((res) => res.json());
 
 import { PeerContextProvider, PeerContext } from '../../contexts/PeerContext';
 import { StreamContextProvider, StreamContext } from '../../contexts/StreamContext';
@@ -14,11 +16,9 @@ import { StreamContextProvider, StreamContext } from '../../contexts/StreamConte
 export default function CastMain () {
 
   const router = useRouter()
-
   const {
     user
   } = router.query
-
 
   return (
     <>
@@ -32,7 +32,6 @@ export default function CastMain () {
       </StreamContextProvider>
     }
     </>
-
   )
 }
 
@@ -42,16 +41,31 @@ function Cast({ user }) {
   const otherVideo = useRef(null);
 
   const [ localStream, setLocalStream ] = useState(null);
-  const [ otherUserName, setOtherUserName ] = useState(null);
 
   const { peer, dataConnection, setDataConnection } = useContext(PeerContext);
   const { startMediaStream } = useContext(StreamContext);
 
-  const callUser = () => {
-    const connection = peer.connect(otherUserName);
+  const callUser = (otherUser) => {
+    const connection = peer.connect(otherUser);
     connection['caller'] = peer.id;
     setDataConnection(connection);
   }
+
+  const { data: connectedPeers, error } = useSWR(
+    process.env.NEXT_PUBLIC_PEERJSSERVER_API_URL,
+    fetcher
+  );
+
+  const nextUser = () => {
+    if (connectedPeers && peer) {
+      const otherPeers = connectedPeers.filter(elem => elem !== peer.id)
+      // get a random peer to call
+      const otherPeerId = otherPeers[Math.floor(Math.random() * otherPeers.length)];
+      // call
+      if (otherPeerId) callUser(otherPeerId);
+    }
+  };
+
 
   useEffect(() => {
     const handler = (connection) => {
@@ -101,22 +115,20 @@ function Cast({ user }) {
 
   return (
     <>
-    <h1>Hi, {peer?.id}</h1>
+    <h1>Snapcio - Ionkom Select</h1>
     <div className="container">
       <div className="container__half">
         <div>
           <video className={dataConnection ? '' : 'video'} ref={otherVideo} width={400} height={300} />
         </div>
-        <div >
+        <div>
           <video className={localStream  ? '' : 'video'} ref={selfVideo} width={200} height={150} />
         </div>
       </div>
 
       <div className="container__half">
         <div>
-          <label>Name to call:</label>
-          <input name="name" onChange={e => setOtherUserName(e.target.value)} />
-          <button onClick={ callUser }>Call</button>
+          <button className='button' onClick={ nextUser }>Next</button>
         </div>
         {
           dataConnection && <Call localStream={ localStream } otherVideo={ otherVideo } />
@@ -130,6 +142,7 @@ function Cast({ user }) {
       }
       .container__half {
         flex: 1;
+        justify-content: center;
       }
       .video {
         background-image: url("/broken_stream.gif");
@@ -141,6 +154,25 @@ function Cast({ user }) {
         
         margin-bottom: 15px;
       }
+      .button {
+        background-color: blue;
+        border: none;
+        border-radius: 5px;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        font-weight: 600;
+        transition-duration: 0.4s;
+        cursor: pointer;
+      }
+      .button:hover {
+        background-color: #4CAF50; /* Green */
+        color: white;
+      }
+      
     `}</style>
     </>
   );

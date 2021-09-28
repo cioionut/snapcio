@@ -127,9 +127,10 @@ export default function Call({ localStream, otherVideo }) {
   return (
     <>
       <div className="container">
-        <h1>
+        {/* <h1>
           {peer?.id} ⬄ {dataConnection?.peer} <button onClick={disconnect}>Hang up</button>
-        </h1>
+        </h1> */}
+        <h3>Chat</h3>
         <div>
           {messages.map((msg) => (
             <p key={msg.id} style={{ color: msg.self ? '#999' : '#222' }}>
