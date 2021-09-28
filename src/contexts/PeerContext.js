@@ -16,10 +16,13 @@ export const PeerContextProvider = ({ children, initialContext }) => {
     user,
   } = initialContext;
   const serverConfig = process.env.NEXT_PUBLIC_ENV === 'production'
-  ? undefined 
+  ? {
+    host: 'peerjs.ionkom.com',
+    path: '/myapp',
+  }
   : {
-    host: 'peerjs.cio.ionkom.com',
-    port: 80, // default 443
+    host: 'localhost',
+    port: 9000,
     path: '/myapp',
   }
 
