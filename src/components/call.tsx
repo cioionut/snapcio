@@ -3,7 +3,7 @@ import * as React from 'react';
 import { PeerContext } from '../contexts/PeerContext';
 
 
-export default function Call({ localStream, otherVideo }) {
+export default function Call({ localStream, otherVideo, userName }) {
 
   const [messages, setMessages] = React.useState([]);
   const [mediaConnection, setMediaConnection] = React.useState(null);
@@ -124,13 +124,15 @@ export default function Call({ localStream, otherVideo }) {
     return () => mediaConn.off('stream', handler);
   }
 
+  console.log(dataConnection)
+
   return (
     <>
       <div className="container">
-        {/* <h1>
-          {peer?.id} ⬄ {dataConnection?.peer} <button onClick={disconnect}>Hang up</button>
-        </h1> */}
-        <h3>Chat</h3>
+        <h2>Chat</h2>
+        <h3>
+          {userName} ⬄ {dataConnection?.metadata?.user} <button onClick={disconnect}>Hang up</button>
+        </h3>
         <div>
           {messages.map((msg) => (
             <p key={msg.id} style={{ color: msg.self ? '#999' : '#222' }}>

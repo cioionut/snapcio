@@ -46,7 +46,12 @@ function Cast({ user }) {
   const { startMediaStream } = useContext(StreamContext);
 
   const callUser = (otherUser) => {
-    const connection = peer.connect(otherUser);
+    const connection = peer.connect(otherUser, {
+      metadata: {
+        user,
+      },
+      serialization: 'json',
+    });
     connection['caller'] = peer.id;
     setDataConnection(connection);
   }
@@ -131,7 +136,7 @@ function Cast({ user }) {
           <button className='button' onClick={ nextUser }>Next</button>
         </div>
         {
-          dataConnection && <Call localStream={ localStream } otherVideo={ otherVideo } />
+          dataConnection && <Call localStream={ localStream } otherVideo={ otherVideo } userName={ user } />
         }
       </div>
 
