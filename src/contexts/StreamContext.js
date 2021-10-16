@@ -2,9 +2,9 @@ import adapter from 'webrtc-adapter';
 import { useEffect, createContext, useState } from 'react'
 
 const StreamContext = createContext({
+  mediaStream: null,
   muteToggle: () => {},
   micMuted: false,
-  mediaStream: null,
   startMediaStream: null
 });
 
@@ -48,9 +48,9 @@ const StreamContextProvider = ({ children }) => {
 
   return (
     <StreamContext.Provider value={{
-      checkMicPermission,
-      startMediaStream,
       mediaStream,
+      startMediaStream,
+      checkMicPermission,
       micAccess: streamAccess,
       muteToggle,
       micMuted,
