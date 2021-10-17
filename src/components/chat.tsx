@@ -30,39 +30,24 @@ function Chat() {
 
   let dataConnection;
 
-  const [ localStream, setLocalStream ] = useState(null);
+  // const [ localStream, setLocalStream ] = useState(null);
 
-  const { connectedUsers, remoteStream } = useContext(MyAppContext);
+  const { connectedUsers, localStream, remoteStream } = useContext(MyAppContext);
   const { startMediaStream } = useContext(StreamContext);
 
   // set local stream
   useEffect(() => {
-    if (!localStream)
-      startMediaStream()
-        .then((stream) => {
-          showVideo(stream, selfVideo.current, true);
-          setLocalStream(stream);
-        })
-        .catch((error) => {
-          console.log('Failed to get local stream', error);
-        });
-
-    // returned function will be called on component unmount
-    return () => {
-      console.log(`Trying to clean media ${localStream}`);
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        console.log("Cleanup media stream tracks");
-      }
-    }
+    console.log('should show LOCAL stream');
+    if (!localStream) return;
+    showVideo(localStream, selfVideo.current, true);
   }, [localStream]);
 
 
   // set remote stream
   useEffect(() => {
-    if (remoteStream) {
-      showVideo(remoteStream, otherVideo.current, false);
-    }
+    console.log('should show REMOTE stream');
+    if (!remoteStream) return;
+    showVideo(remoteStream, otherVideo.current, false);
   }, [remoteStream])
 
 

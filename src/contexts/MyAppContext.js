@@ -12,6 +12,7 @@ export const MyAppContext = createContext({
   peerConnection: null,
   callUser: (socketId) => {},
   connectedUsers: [],
+  localStream: null,
   remoteStream: null
 });
 
@@ -39,7 +40,7 @@ function useSocket(url) {
 
 export const MyAppContextProvider = ({ children }) => {
 
-
+  const [ localStream, setLocalStream ] = useState(null);
   const [ remoteStream, setRemoteStream ] = useState(null);
 
   const [ connectedUsers, setConnectedUsers ] = useState([]);
@@ -50,78 +51,102 @@ export const MyAppContextProvider = ({ children }) => {
   // const { socket } = useContext(SocketContext);
   const socket = useSocket('http://localhost:5000');
 
+  // add local stream tracks to peerConnection
+  useEffect(() => {
+    startMediaStream()
+      .then((stream) => {
+        console.log('set tracks');
+        setLocalStream(stream);
+        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+      })
+      .catch((error) => {
+        console.log('Failed to get local stream', error);
+      });
+  }, []);
+
   // handle sockets
   useEffect(() => {
-    if (socket) {
-      socket.on("update-user-list", ({ users }) => {
-        updateUserList(users);
-      });
-    
-      socket.on("remove-user", ({ socketId }) => {
-        removeUser(socketId);
-      });
-    
-      socket.on("call-made", async data => {
-        if (getCalled) {
-          const confirmed = confirm(
-            `User "Socket: ${data.socket}" wants to call you. Do accept this call?`
-          );
-          if (!confirmed) {
-            socket.emit("reject-call", {
-              from: data.socket
-            });
-            return;
-          }
-        }
-        // sdp
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(new RTCSessionDescription(answer));
-      
-        socket.emit("make-answer", {
-          answer,
-          to: data.socket
-        });
-        setGetCalled(true);
-      });
-    
-      socket.on("answer-made", async data => {
-        await peerConnection.setRemoteDescription(
-          new RTCSessionDescription(data.answer)
-        );
-      
-        if (!isAlreadyCalling) {
-          callUser(data.socket);
-          setIsAlreadyCalling(true);
-        }
-      });
-      
-      socket.on("call-rejected", data => {
-        alert(`User: "Socket: ${data.socket}" rejected your call.`);
-        // unselectUsersFromList();
-      });
+    if (!socket) return;
+
+      // functions
+    const updateUserList = ({ users }) => {
+      console.log(`updateUserList::ids: ${users}`);
+      // todo: find a better way to update the list
+      setConnectedUsers(users);
+    }
+    const removeUser = ({ socketId }) => {
+      console.log(`removeUser::ids: ${socketId}`);
+      // todo: find a better way to update the list
+      setConnectedUsers(connectedUsers.filter(usrSocketId => usrSocketId != socketId));
     }
 
-  }, [socket]);
+    const callReceived = async data => {
+      console.log(`getCalled::${getCalled}`)
+      if (getCalled) {
+        const confirmed = confirm(
+          `User "Socket: ${data.socket}" wants to call you. Do accept this call?`
+        );
+        if (!confirmed) {
+          socket.emit("reject-call", {
+            from: data.socket
+          });
+          return;
+        }
+      }
+      // sdp
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(new RTCSessionDescription(answer));
+    
+      socket.emit("make-answer", {
+        answer,
+        to: data.socket
+      });
+      setGetCalled(true);
+    }
+
+    const answerToCall = async data => {
+      console.log(`receive-answer::`, data.answer);
+
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(data.answer)
+      );
+    
+      if (!isAlreadyCalling) {
+        callUser(data.socket);
+        setIsAlreadyCalling(true);
+      }
+    }
+
+    const rejectCall = data => {
+      alert(`User: "Socket: ${data.socket}" rejected your call.`);
+      // unselectUsersFromList();
+    }
+
+    socket.on("update-user-list", updateUserList);
+    socket.on("remove-user", removeUser);
+    socket.on("call-made", callReceived);
+    socket.on("answer-made", answerToCall);
+    socket.on("call-rejected", rejectCall);
+
+    return () => {
+      socket.off("update-user-list", updateUserList);
+      socket.off("remove-user", removeUser);
+      socket.off("call-made", callReceived);
+      socket.off("answer-made", answerToCall);
+      socket.off("call-rejected", rejectCall);
+    }
+
+  }, [socket, callUser, connectedUsers, getCalled, isAlreadyCalling]);
   
   // set remote stream
   peerConnection.ontrack = function({ streams: [stream] }) {
+    console.log("set-remote-stream", stream);
     setRemoteStream(stream);
   };
 
   // functions
-  const updateUserList = (socketIds) => {
-    console.log(`updateUserList::ids: ${socketIds}`);
-    // todo: find a better way to update the list
-    setConnectedUsers(socketIds);
-  }
-  const removeUser = (socketId) => {
-    console.log(`removeUser::ids: ${socketId}`);
-    // todo: find a better way to update the list
-    setConnectedUsers(connectedUsers.filter(usrSocketId => usrSocketId != socketId));
-  }
-
-  const callUser = async (socketId) => {
+  const callUser = useCallback(async (socketId) => {
     console.log(`callUser:: ${socketId}`);
     
     const offer = await peerConnection.createOffer();
@@ -131,25 +156,15 @@ export const MyAppContextProvider = ({ children }) => {
       offer,
       to: socketId
     });
-  };
 
-  // add local stream tracks to peerConnection
-  useEffect(() => {
-    startMediaStream()
-      .then((stream) => {
-        console.log('set tracks');
-        stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
-      })
-      .catch((error) => {
-        console.log('Failed to get local stream', error);
-      });
-  }, [])
+  }, [socket]);
 
   return (
     <MyAppContext.Provider value={{
       peerConnection,
       callUser,
       connectedUsers,
+      localStream,
       remoteStream
     }}>
       {children}
