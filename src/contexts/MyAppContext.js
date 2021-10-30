@@ -55,7 +55,7 @@ export const MyAppContextProvider = ({ children }) => {
   useEffect(() => {
     startMediaStream()
       .then((stream) => {
-        console.log('set tracks');
+        console.log('Add local stream tracks to peerConnection');
         setLocalStream(stream);
         stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
       })
@@ -81,7 +81,8 @@ export const MyAppContextProvider = ({ children }) => {
     }
 
     const callReceived = async data => {
-      console.log(`getCalled::${getCalled}`)
+      // todo: investigate why this methos is called twice
+      console.log(`callReceived::getCalled:${getCalled}`);
       if (getCalled) {
         const confirmed = confirm(
           `User "Socket: ${data.socket}" wants to call you. Do accept this call?`
@@ -106,7 +107,7 @@ export const MyAppContextProvider = ({ children }) => {
     }
 
     const answerToCall = async data => {
-      console.log(`receive-answer::`, data.answer);
+      console.log(`answerToCall::data.answer:`, data.answer);
 
       await peerConnection.setRemoteDescription(
         new RTCSessionDescription(data.answer)

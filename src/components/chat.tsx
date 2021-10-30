@@ -3,7 +3,7 @@ import { useContext, useState, useEffect, useRef } from 'react';
 
 // locals
 import { MyAppContextProvider, MyAppContext } from '../contexts/MyAppContext';
-import { StreamContextProvider, StreamContext } from '../contexts/StreamContext';
+import { StreamContextProvider } from '../contexts/StreamContext';
 // import { SocketContextProvider, SocketContext } from '../contexts/SocketContext';
 
 import UserList from './list/users';
@@ -28,27 +28,23 @@ function Chat() {
   const selfVideo = useRef(null);
   const otherVideo = useRef(null);
 
-  let dataConnection;
-
-  // const [ localStream, setLocalStream ] = useState(null);
-
+  const [ isRemoteStream, setIsRemoteStream ] = useState(false);
   const { connectedUsers, localStream, remoteStream } = useContext(MyAppContext);
-  const { startMediaStream } = useContext(StreamContext);
 
   // set local stream
   useEffect(() => {
-    console.log('should show LOCAL stream');
     if (!localStream) return;
+    console.log('should show LOCAL stream');
     showVideo(localStream, selfVideo.current, true);
   }, [localStream]);
 
-
   // set remote stream
   useEffect(() => {
-    console.log('should show REMOTE stream');
     if (!remoteStream) return;
+    console.log('should show REMOTE stream');
     showVideo(remoteStream, otherVideo.current, false);
-  }, [remoteStream])
+    setIsRemoteStream(true);
+  }, [remoteStream]);
 
 
   function showVideo(stream: MediaStream, video: HTMLVideoElement, muted: boolean) {
@@ -69,16 +65,16 @@ function Chat() {
       <div className="container">
           <div className="container__half">
             <div>
-            <video className={dataConnection ? '' : 'brokenvideo'} ref={otherVideo} width={400} height={300} />
+              <video className={'brokenvideo'} ref={otherVideo} width={400} height={300} />
             </div>
             <div>
-            <video className={localStream  ? '' : 'brokenvideo'} ref={selfVideo} width={200} height={150} />
+              <video className={localStream  ? '' : 'brokenvideo'} ref={selfVideo} width={200} height={150} />
             </div>
           </div>
 
           <div className="container__half">
             <div>
-            <button className='button' onClick={ nextUser }>Next</button>
+              <button className='button' onClick={ nextUser }>Next</button>
             </div>
           </div>
 
@@ -86,7 +82,7 @@ function Chat() {
             <UserList users={ connectedUsers }/>
           </div>
 
-        </div>
+      </div>
 
         <style jsx>{`
           .container {

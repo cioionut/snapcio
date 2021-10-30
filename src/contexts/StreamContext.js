@@ -19,7 +19,8 @@ const StreamContextProvider = ({ children }) => {
 
     try {
       const stream = navigator.mediaDevices.getUserMedia({
-        video: true,
+        // todo: make a user choice
+        video: {width: {exact: 320}, height: {exact: 240}},
         audio: true
       })
       setMediaStream(stream)
