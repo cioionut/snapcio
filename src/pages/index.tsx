@@ -6,7 +6,7 @@ import Head from 'next/head';
 // locals
 import Layout from '../components/layout';
 const ChatMain = dynamic(
-  () => import('../components/chat'),
+  () => import('../components/chatx'),
   { ssr: false }
 );
 

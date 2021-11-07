@@ -79,7 +79,7 @@ function Chat() {
           </div>
 
           <div>
-            <UserList users={ connectedUsers }/>
+            <UserList users={ connectedUsers } invite={ undefined }/>
           </div>
 
       </div>
