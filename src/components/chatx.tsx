@@ -79,7 +79,8 @@ function Chat() {
 
   const [ connectedUsers, setConnectedUsers ] = useState([]);
 
-  const socket = useSocket('http://localhost:5000');
+  const signalingSrvUrl = process.env.NEXT_PUBLIC_SIGNALING_API_URL;
+  const socket = useSocket(signalingSrvUrl);
 
   const [ myUsername, setMyUsername ] = useState(null);      // To store my username
   const [ targetUsername, setTargetUsername ] = useState(null);      // To store username of other peer
@@ -556,10 +557,10 @@ function Chat() {
             </div>
           </div>
 
-          <div>
+          {/* <div>
             myUser: { myUsername }
             <UserList users={ connectedUsers } invite={ invite }/>
-          </div>
+          </div> */}
 
       </div>
 
