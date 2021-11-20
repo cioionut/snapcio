@@ -81,7 +81,6 @@ function Chat() {
 
   const socket = useSocket('http://localhost:5000');
 
-  const [ shouldCall, setShouldCall ] = useState(false);
   const [ myUsername, setMyUsername ] = useState(null);      // To store my username
   const [ targetUsername, setTargetUsername ] = useState(null);      // To store username of other peer
   const [ myPeerConnection, setMyPeerConnection ] = useState(null);    // RTCPeerConnection
@@ -90,7 +89,6 @@ function Chat() {
   // Send a JavaScript object by converting it to JSON and sending
   // it as a message on the WebSocket connection.
   const sendToServer = useCallback(function (msg) {
-
     log("Sending '" + msg.type + "' message: " + msg);
     socket.emit(msg.type, msg);
   }, [socket]);
@@ -140,6 +138,21 @@ function Chat() {
     // Disable the hangup button
     setTargetUsername(null);
   }, [myPeerConnection]);
+
+  // Hang up the call by closing our end of the connection, then
+  // sending a "hang-up" message to the other peer (keep in mind that
+  // the signaling is done on a different connection). This notifies
+  // the other peer that the connection should be terminated and the UI
+  // returned to the "no call in progress" state.
+  const hangUpCall = useCallback(() => {
+    closeVideoCall();
+    sendToServer({
+      name: myUsername,
+      target: targetUsername,
+      type: "hang-up"
+    });
+    setTargetUsername(null);
+  }, [closeVideoCall, sendToServer, myUsername, targetUsername])
 
   // Handle errors which occur when trying to access the local media
   // hardware; that is, exceptions thrown by getUserMedia(). The two most
@@ -274,7 +287,7 @@ function Chat() {
   // In our case, we're just taking the first stream found and attaching
   // it to the <video> element for incoming media.
   const handleTrackEvent = useCallback(function (event) {
-    log("*** Track event");
+    log("*** Track event: show remote stream");
     // document.getElementById("received_video").srcObject = event.streams[0];
     showVideo(event.streams[0], otherVideo.current, false);
   }, [otherVideo]); // depends on received video html element
@@ -415,6 +428,14 @@ function Chat() {
         }
       }
 
+      // console.log('handleVideoOfferMsg::', mpc.getTransceivers());
+      if (mpc.getTransceivers().length <= 2) {
+        // Just Add the camera stream to the RTCPeerConnection
+        localStream.getTracks().forEach(
+          track => mpc.addTransceiver(track, {streams: [localStream]})
+        );
+      }
+
       log("---> Creating and sending answer to caller");
       await mpc.setLocalDescription(await mpc.createAnswer());
 
@@ -459,39 +480,34 @@ function Chat() {
       closeVideoCall();
     } // depends on closeVideoCall
 
-    // Hang up the call by closing our end of the connection, then
-    // sending a "hang-up" message to the other peer (keep in mind that
-    // the signaling is done on a different connection). This notifies
-    // the other peer that the connection should be terminated and the UI
-    // returned to the "no call in progress" state.
-    function hangUpCall() {
-      closeVideoCall();
-
-      sendToServer({
-        name: myUsername,
-        target: targetUsername,
-        type: "hang-up"
-      });
-    }
-
     // user mnagement functions
     const updateUserList = ({ users }) => {
       console.log(`updateUserList::ids: ${users}`);
       // todo: find a better way to update the list
-      setConnectedUsers(users);
+      setConnectedUsers(users.filter(usr=> usr != socket.id));
     }
     const removeUser = ({ socketId }) => {
       console.log(`removeUser::ids: ${socketId}`);
       // todo: find a better way to update the list
       setConnectedUsers(connectedUsers.filter(usrSocketId => usrSocketId != socketId));
+    };
+
+    const inviteToCall = ({ target }) => {
+      if (target) {
+        invite(target);
+      } else {
+        alert('No other users available');
+      }
     }
 
     socket.on('connect', function() {
-      setMyUsername(socket.id); //
+      setMyUsername(socket.id); // 
     });
 
     socket.on("update-user-list", updateUserList);
     socket.on("remove-user", removeUser);
+
+    socket.on('receive-a-match', inviteToCall);
 
     // Signaling messages: these messages are used to trade WebRTC
     // signaling information during negotiations leading up to a video
@@ -504,24 +520,23 @@ function Chat() {
     return () => {
       socket.off("update-user-list", updateUserList);
       socket.off("remove-user", removeUser);
+      socket.off('receive-a-match', inviteToCall);
 
       socket.off('video-offer', handleVideoOfferMsg);
       socket.off('video-answer', handleVideoAnswerMsg);
       socket.off('new-ice-candidate', handleNewICECandidateMsg);
       socket.off('hang-up', handleHangUpMsg);
     }
-  }, [socket, myPeerConnection, createPeerConnection, myUsername, targetUsername, localStream, connectedUsers, sendToServer, closeVideoCall, handleGetUserMediaError]);
+  }, [socket, myPeerConnection, createPeerConnection, myUsername, targetUsername, localStream, connectedUsers, sendToServer, closeVideoCall, handleGetUserMediaError, invite]);
 
 
-  const nextUser = () => {
-    console.log('not implemented yet');
-  };
-
-
-  const call = useCallback((userId) => {
-    setTargetUsername(userId);
-    setShouldCall(true);
-  }, []);
+  const nextUser = useCallback(() => {
+    if (targetUsername)
+      hangUpCall();
+    socket.emit('request-a-match', {
+      name: myUsername,
+    });
+  }, [socket, myUsername, hangUpCall, targetUsername]);
 
   return (
     <>
@@ -542,6 +557,7 @@ function Chat() {
           </div>
 
           <div>
+            myUser: { myUsername }
             <UserList users={ connectedUsers } invite={ invite }/>
           </div>
 
