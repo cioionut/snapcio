@@ -7,8 +7,9 @@ import io from 'socket.io-client';
 
 import UserList from './list/users';
 
-function useSocket(url) {
+function useSocket() {
   const [socket, setSocket] = useState(null);
+  const [ url, setUrl ] = useState(process.env.NEXT_PUBLIC_ENV === 'production' ? process.env.NEXT_PUBLIC_SIGNALING_API_URL : 'http://localhost:5000');
 
   useEffect(() => {
     const socketIo = io(url);
@@ -79,8 +80,7 @@ function Chat() {
 
   const [ connectedUsers, setConnectedUsers ] = useState([]);
 
-  const signalingSrvUrl = process.env.NEXT_PUBLIC_SIGNALING_API_URL;
-  const socket = useSocket(signalingSrvUrl);
+  const socket = useSocket();
 
   const [ myUsername, setMyUsername ] = useState(null);      // To store my username
   const [ targetUsername, setTargetUsername ] = useState(null);      // To store username of other peer
@@ -556,12 +556,13 @@ function Chat() {
               <button className='button' onClick={ nextUser }>Next</button>
             </div>
           </div>
-
-          {/* <div>
-            myUser: { myUsername }
-            <UserList users={ connectedUsers } invite={ invite }/>
-          </div> */}
-
+          {
+            (process.env.NEXT_PUBLIC_ENV !== 'production') && 
+            <div>
+              myUser: { myUsername }
+              <UserList users={ connectedUsers } invite={ invite }/>
+            </div>
+          }
       </div>
 
         <style jsx>{`
