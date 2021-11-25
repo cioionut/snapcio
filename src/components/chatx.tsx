@@ -577,9 +577,7 @@ function Chat() {
             background-image: url("/broken_stream.gif");
             background-repeat: no-repeat;
 
-            // background-color: #cccccc; /* Used if the image is unavailable */
-            // width: 300px;
-            // height: 224px; /* You must set a specified height */
+            background-color: #cccccc; /* Used if the image is unavailable */
             
             margin-bottom: 15px;
           }
