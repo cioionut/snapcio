@@ -565,42 +565,42 @@ function Chat() {
           }
       </div>
 
-        <style jsx>{`
-          .container {
-            display: flex;
-          }
-          .container__half {
-            flex: 1;
-            justify-content: center;
-          }
-          .brokenvideo {
-            background-image: url("/broken_stream.gif");
-            background-repeat: no-repeat;
+      <style jsx>{`
+        .container {
+          display: flex;
+        }
+        .container__half {
+          flex: 1;
+          justify-content: center;
+        }
+        .brokenvideo {
+          background-image: url("/broken_stream.gif");
+          background-repeat: no-repeat;
 
-            background-color: #cccccc; /* Used if the image is unavailable */
-            
-            margin-bottom: 15px;
-          }
-          .button {
-            background-color: blue;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            font-weight: 600;
-            transition-duration: 0.4s;
-            cursor: pointer;
-          }
-          .button:hover {
-            background-color: #4CAF50; /* Green */
-            color: white;
-          }
+          background-color: #cccccc; /* Used if the image is unavailable */
           
-        `}</style>
+          margin-bottom: 15px;
+        }
+        .button {
+          background-color: blue;
+          border: none;
+          border-radius: 5px;
+          color: white;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          font-weight: 600;
+          transition-duration: 0.4s;
+          cursor: pointer;
+        }
+        .button:hover {
+          background-color: #4CAF50; /* Green */
+          color: white;
+        }
+        
+      `}</style>
     </>
   )
 };

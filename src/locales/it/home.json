@@ -1,0 +1,8 @@
+{
+  "pageTitle": "Ionkom Meteo - Previsioni precise utilizzando l'AI",
+  "pageDescription": "Meteo Ionkom. Vedi il meteo per le prossime ore/giorni. Le condizioni meteorologiche dettagliate mostrano la temperatura e le precipitazioni per i prossimi 15 giorni.",
+  "h1": "Previsioni Meteo per {{city}}, {{admin1Place}} ",
+  "showBigCities": "{{country}} condizioni meteorologiche nelle città",
+  "showAdmin1": "{{country}} Stati / regioni",
+  "showCountries": "Meteo Mondo"
+}

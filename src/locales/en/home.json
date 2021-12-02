@@ -1,0 +1,8 @@
+{
+  "pageTitle": "Ionkom Weather - Precise forecasts using AI",
+  "pageDescription": "Ionkom World Weather. See the weather for the next hours/days. Detailed weather conditions show temperature and precipitation for the next 15 days.",
+  "h1": "{{city}}, {{admin1Place}} Weather",
+  "showBigCities": "{{country}} weather conditions in cities",
+  "showAdmin1": "{{country}} States/Regions",
+  "showCountries": "World Weather"
+}

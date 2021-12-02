@@ -1,0 +1,8 @@
+{
+  "pageTitle": "Vremea în România, prognoza meteo în țară",
+  "pageDescription": "Vremea Ionkom. Vedeți vremea pentru următoarele ore/zile. Condițiile meteo detaliate arată temperatura și precipitațiile pentru următoarele 15 zile.",
+  "h1": "Vremea în {{city}}, {{admin1Place}}",
+  "showBigCities": "Condițiile meteo în marile orașe",
+  "showAdmin1": "Prognoza meteo pe județe",
+  "showCountries": "În lume"
+}

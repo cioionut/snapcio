@@ -1,0 +1,8 @@
+{
+  "pageTitle": "Ionkom Weather - Präzise Vorhersagen mit AI",
+  "pageDescription": "Ionkom Wetter. Sehen Sie das Wetter für die nächsten Stunden/Tage. Detaillierte Wetterbedingungen zeigen Temperatur und Niederschlag für die nächsten 15 Tage an.",
+  "h1": "Wetter in {{city}}, {{admin1Place}}",
+  "showBigCities": "{{country}} Wetterbedingungen in Städten",
+  "showAdmin1": "{{country}} Staaten / Regionen",
+  "showCountries": "Weltwetter"
+}

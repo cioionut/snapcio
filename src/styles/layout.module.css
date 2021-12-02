@@ -1,0 +1,37 @@
+.logoFont {
+  font-family: Exo, Helvetica, Arial, sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
+
+.mainNavbar {
+  /* color: white; */
+  /* background: white; */
+  font-size: large;
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: 0 0.25rem 0.75rem rgb(0 0 0 / 5%);
+}
+
+.col-centered {
+  float: none;
+  margin: 0 auto;
+}
+
+.footer {
+  bottom: 0;
+  width: 100%;
+  line-height: 45px;
+  background-color: #f5f5f5;
+  font-size: 0.85rem;
+}
+.footerLink {  
+  color: #5f6368;
+}
+.footerLink:hover {  
+  color: #5f6368;
+}
+
+.searchLocation {
+  cursor: pointer;
+}
