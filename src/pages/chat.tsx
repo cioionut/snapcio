@@ -7,27 +7,33 @@ import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap';
 
 // locals
 import Layout from '../components/layout';
-const ChatMain = dynamic(
-  () => import('../components/chatx'),
+const Video = dynamic(
+  () => import('../components/video'),
   { ssr: false }
 );
 
-export default function Home() {
-  
+
+
+export default function Chat() {
+
 
   return (
     <>
       <Layout>
           <Head>
-            <title>Snapcio</title>
+            <title>Chat - Snapcio</title>
             <meta name="description" content="Chat free" />
-            <link rel="icon" href="/favicon.ico" />
           </Head>
 
           <Container fluid>
-            <ChatMain/>
+            <Row>
+              <Col xs={6}>
+                <Video/>
+              </Col>
+            </Row>
           </Container>
         </Layout>
+        
     </>
     
   )

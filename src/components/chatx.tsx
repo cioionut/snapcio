@@ -2,6 +2,8 @@
 import { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 
+import { Container, Row, Col, Nav, Navbar, Button } from 'react-bootstrap';
+
 // locals
 // import { WebRTCContextProvider, WebRTCContext } from '../contexts/WebRTCContext';
 
@@ -78,7 +80,7 @@ function Chat() {
   const [ localStream, setLocalStream ] = useState(null);
   const [ remoteStream, setRemoteStream ] = useState(null);
 
-  const [ connectedUsers, setConnectedUsers ] = useState([]);
+  const [ availableUsers, setAvailableUsers ] = useState([]);
 
   const socket = useSocket();
 
@@ -485,12 +487,12 @@ function Chat() {
     const updateUserList = ({ users }) => {
       console.log(`updateUserList::ids: ${users}`);
       // todo: find a better way to update the list
-      setConnectedUsers(users.filter(usr=> usr != socket.id));
+      setAvailableUsers(users.filter(usr=> usr != socket.id));
     }
     const removeUser = ({ socketId }) => {
       console.log(`removeUser::ids: ${socketId}`);
       // todo: find a better way to update the list
-      setConnectedUsers(connectedUsers.filter(usrSocketId => usrSocketId != socketId));
+      setAvailableUsers(availableUsers.filter(usrSocketId => usrSocketId != socketId));
     };
 
     const inviteToCall = ({ target }) => {
@@ -528,7 +530,7 @@ function Chat() {
       socket.off('new-ice-candidate', handleNewICECandidateMsg);
       socket.off('hang-up', handleHangUpMsg);
     }
-  }, [socket, myPeerConnection, createPeerConnection, myUsername, targetUsername, localStream, connectedUsers, sendToServer, closeVideoCall, handleGetUserMediaError, invite]);
+  }, [socket, myPeerConnection, createPeerConnection, myUsername, targetUsername, localStream, availableUsers, sendToServer, closeVideoCall, handleGetUserMediaError, invite]);
 
 
   const nextUser = useCallback(() => {
@@ -541,21 +543,23 @@ function Chat() {
 
   return (
     <>
-      <div className="container">
-          <div className="container__half">
-            <div>
-              <video className={'brokenvideo'} ref={otherVideo} width={400} height={300} />
-            </div>
-            <div>
-              <video className={localStream  ? '' : 'brokenvideo'} ref={selfVideo} width={200} height={150} />
-            </div>
-          </div>
-
-          <div className="container__half">
-            <div>
-              <button className='button' onClick={ nextUser }>Next</button>
-            </div>
-          </div>
+      <Container>
+        <Row>
+          <Col>
+            <video className={'brokenvideo video-hflip'} ref={otherVideo}/>
+          </Col>
+        </Row>
+        <Row>
+          <Col>
+            <video className={`video-hflip ${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
+          
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col xs='auto'>
+            <Button onClick={ nextUser }>Skip</Button>
+          </Col>
+          {/* <Col>
           {
             (process.env.NEXT_PUBLIC_ENV !== 'production') && 
             <div>
@@ -563,9 +567,25 @@ function Chat() {
               <UserList users={ connectedUsers } invite={ invite }/>
             </div>
           }
-      </div>
+          </Col> */}
+        </Row>
+        <Row className="mt-3">
+          <Col>
+          Available Users: {availableUsers.length}
+          </Col>
+        </Row>
+      </Container>
 
       <style jsx>{`
+        video {
+          max-width: 100%;
+          height: auto;
+        }
+        .video-hflip {
+            transform: rotateY(180deg);
+            -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+            -moz-transform:rotateY(180deg); /* Firefox */
+        }
         .container {
           display: flex;
         }

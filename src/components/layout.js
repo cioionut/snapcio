@@ -32,6 +32,7 @@ export default function Layout ({ children }) {
         <meta property="og:site_name" content={ siteName }/>
         <meta property="og:type" content="website" />
         <meta property="og:locale" content={ locale } />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <MyCookieConsent buttonText={ t('cookieconsent:confirm') }>
@@ -49,11 +50,14 @@ export default function Layout ({ children }) {
             <Link href="/" passHref>
               <Nav.Link>{ t('home') }</Nav.Link>
             </Link>
+            <Link href="/chat" passHref>
+              <Nav.Link>{ t('chat') }</Nav.Link>
+            </Link>
             <Settings locale={locale} path={router.asPath}/>
           </Nav>
         </Navbar.Collapse>
       </Navbar>
-      <main>
+      <main id="main-container">
         {children}
       </main>
       <footer className={styles.footer}>
@@ -71,6 +75,12 @@ export default function Layout ({ children }) {
             </Row>
         </Container>
       </footer>
+
+      <style jsx>{`
+        #main-container {
+          padding-top: 60px;
+        }
+      `}</style>
     </>
   )
 }
