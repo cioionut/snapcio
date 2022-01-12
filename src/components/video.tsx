@@ -96,7 +96,7 @@ export default function Video() {
 
   return (
     <>
-      <video className={`video-hflip ${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
+      <video className={`${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
 
       <Form.Select aria-label="Select Video Camera" onChange={start}>
         {videoOptions}

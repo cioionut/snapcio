@@ -7,7 +7,21 @@ import { Container, Row, Col, Nav, Navbar, Button } from 'react-bootstrap';
 // locals
 // import { WebRTCContextProvider, WebRTCContext } from '../contexts/WebRTCContext';
 
-import UserList from './list/users';
+// import UserList from './list/users';
+
+const pcConfig = {
+  'iceServers': [
+    {
+      'urls': `stun:${process.env.NEXT_PUBLIC_TURN_HOST}`
+    },
+    {
+      'urls': `turn:${process.env.NEXT_PUBLIC_TURN_HOST}`,
+      'username': process.env.NEXT_PUBLIC_TURN_USER,
+      'credential': process.env.NEXT_PUBLIC_TURN_PASSWORD,
+    }
+  ]
+};
+
 
 function useSocket() {
   const [socket, setSocket] = useState(null);
@@ -305,7 +319,7 @@ function Chat() {
 
     // Create an RTCPeerConnection which knows to use our chosen
     // STUN server.
-    const pc = new RTCPeerConnection();
+    const pc = new RTCPeerConnection(pcConfig);
     setMyPeerConnection(pc);
     return pc;
   }, []);
@@ -546,13 +560,12 @@ function Chat() {
       <Container>
         <Row>
           <Col>
-            <video className={'brokenvideo video-hflip'} ref={otherVideo}/>
+            <video className={'brokenvideo'} ref={otherVideo}/>
           </Col>
         </Row>
         <Row>
           <Col>
             <video className={`video-hflip ${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
-          
           </Col>
         </Row>
         <Row className="justify-content-center">
