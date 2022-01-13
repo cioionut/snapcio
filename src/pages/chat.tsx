@@ -3,7 +3,8 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Head from 'next/head';
 
-import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
 
 // locals
 import Layout from '../components/layout';
@@ -13,10 +14,7 @@ const Video = dynamic(
 );
 
 
-
 export default function Chat() {
-
-
   return (
     <>
       <Layout>
@@ -25,12 +23,10 @@ export default function Chat() {
             <meta name="description" content="Chat free" />
           </Head>
 
-          <Container fluid>
-            <Row>
-              <Col xs={6}>
-                <Video/>
-              </Col>
-            </Row>
+          <Container maxWidth="sm">
+            <Box sx={{ my: 1 }}>
+              <Video/>
+            </Box>
           </Container>
         </Layout>
         

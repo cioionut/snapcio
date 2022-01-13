@@ -2,7 +2,10 @@
 import { useContext, useState, useEffect, useRef, useCallback } from 'react';
 import io from 'socket.io-client';
 
-import { Container, Row, Col, Nav, Navbar, Button } from 'react-bootstrap';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
 // locals
 // import { WebRTCContextProvider, WebRTCContext } from '../contexts/WebRTCContext';
@@ -558,35 +561,18 @@ function Chat() {
   return (
     <>
       <Container>
-        <Row>
-          <Col>
-            <video className={'brokenvideo'} ref={otherVideo}/>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            <video className={`video-hflip ${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
-          </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col xs='auto'>
-            <Button onClick={ nextUser }>Skip</Button>
-          </Col>
-          {/* <Col>
-          {
-            (process.env.NEXT_PUBLIC_ENV !== 'production') && 
-            <div>
-              myUser: { myUsername }
-              <UserList users={ connectedUsers } invite={ invite }/>
-            </div>
-          }
-          </Col> */}
-        </Row>
-        <Row className="mt-3">
-          <Col>
+        <Box>
+          <video className={'brokenvideo'} ref={otherVideo}/>
+        </Box>
+        <Box>
+          <video className={`video-hflip ${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
+        </Box>
+        <Box>
+          <Button variant="contained" onClick={ nextUser }>Skip</Button>
+        </Box>
+        <Box>
           Available Users: {availableUsers.length}
-          </Col>
-        </Row>
+        </Box>
       </Container>
 
       <style jsx>{`

@@ -1,6 +1,10 @@
 import { useContext, MouseEvent, useRef, useState, useEffect, useCallback } from 'react';
 
-import { Container, Button, Form } from 'react-bootstrap';
+import Box from '@mui/material/Box';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 const mediaConstraints = {
   audio: true,            // We want an audio track
@@ -20,24 +24,24 @@ export default function Video() {
   const selfVideo = useRef(null);
 
   const [ localStream, setLocalStream ] = useState(null);
-  const [ videoSources, setVideoSources ] = useState([]);
+  const [ devices, setDevices ] = useState([]);
   const [ audioInputSelect, setAudioInputSelect ] = useState();
   const [ videoSelect, setVideoSelect ] = useState();
   
-
+  const videoSources = devices.filter(deviceInfo => deviceInfo.kind === 'videoinput');
   const videoOptions = videoSources.map(deviceInfo => {
     let deviceLabel;
     const deviceId = deviceInfo.deviceId;
     if (deviceInfo.kind === 'videoinput') {
       deviceLabel = deviceInfo.label;
-      return <option value={deviceId} key={deviceId}>{deviceLabel}</option>
+      return <MenuItem value={deviceId} key={deviceId}>{deviceLabel}</MenuItem>
     } else {
       console.log('Some other kind of source/device: ', deviceInfo);
     }
   });
 
   const gotDevices = (deviceInfos) => {
-    setVideoSources(deviceInfos);
+    setDevices(deviceInfos);
   };
   function gotStream(stream, muted=false) {
     setLocalStream(stream); // make stream available to console
@@ -52,7 +56,7 @@ export default function Video() {
 
   useEffect(() => {
     // navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
-    navigator.mediaDevices.enumerateDevices().then(setVideoSources).catch(handleError);
+    navigator.mediaDevices.enumerateDevices().then(setDevices).catch(handleError);
     start();
   }, []);
 
@@ -97,10 +101,25 @@ export default function Video() {
   return (
     <>
       <video className={`${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
+      {
+        videoSources.length > 0 &&
+        <Box sx={{ minWidth: 120 }}>
+          <FormControl fullWidth>
+            <InputLabel id="demo-simple-select-label">Camera source</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={videoSources[0].deviceId}
+              label="Select Camera"
+              onChange={start}
+            >
+              { videoOptions }
+            </Select>
+          </FormControl>
+        </Box>
+      }
 
-      <Form.Select aria-label="Select Video Camera" onChange={start}>
-        {videoOptions}
-      </Form.Select>
+
 
       <style jsx>{`
         video {

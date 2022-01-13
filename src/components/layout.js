@@ -1,13 +1,21 @@
 import Head from 'next/head';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'react-i18next';
 
-import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
 
-import SearchCse from './global/searchcse';
-import Settings from './settings/settings';
-import MyCookieConsent from './global/mycookieconsent';
+import Link from './global/Link';
+import AppBar from './global/AppBar';
+// import Copyright from '../src/Copyright';
+
+// import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap';
+
+// import SearchCse from './global/searchcse';
+// import Settings from './settings/settings';
+// import MyCookieConsent from './global/mycookieconsent';
 
 // local styles
 import styles from '../styles/layout.module.css';
@@ -35,15 +43,16 @@ export default function Layout ({ children }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <MyCookieConsent buttonText={ t('cookieconsent:confirm') }>
-        { t('cookieconsent:consent') } { cookiePolicyLink }
-      </MyCookieConsent>
+      <AppBar/>
 
-      <Navbar collapseOnSelect fixed="top" bg="white" variant="light" expand="lg" className={`justify-content-center p-2 px-md-4 mb-1 ${styles.mainNavbar}`}>
+      {/* <MyCookieConsent buttonText={ t('cookieconsent:confirm') }>
+        { t('cookieconsent:consent') } { cookiePolicyLink }
+      </MyCookieConsent> */}
+
+      {/* <Navbar collapseOnSelect fixed="top" bg="white" variant="light" expand="lg" className={`justify-content-center p-2 px-md-4 mb-1 ${styles.mainNavbar}`}>
         <Link href="/" passHref>
           <Navbar.Brand className={`me-auto ${styles.logoFont}`}>{siteTitle}</Navbar.Brand>
         </Link>
-        {/* <SearchCse /> */}
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="ms-auto"  activeKey={router.asPath}>
@@ -56,11 +65,12 @@ export default function Layout ({ children }) {
             <Settings locale={locale} path={router.asPath}/>
           </Nav>
         </Navbar.Collapse>
-      </Navbar>
+      </Navbar> */}
+
       <main id="main-container">
         {children}
       </main>
-      <footer className={styles.footer}>
+      {/* <footer className={styles.footer}>
         <Container fluid>
             <Row>
               <Col xs='auto'>
@@ -74,7 +84,7 @@ export default function Layout ({ children }) {
               </Col>
             </Row>
         </Container>
-      </footer>
+      </footer> */}
 
       <style jsx>{`
         #main-container {
