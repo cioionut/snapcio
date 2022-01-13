@@ -21,7 +21,7 @@ import ColorModeContext from '../../contexts/ColorModeContext';
 import Link from './Link';
 
 
-const pages = {'Live': "/", 'Mess.': "/chat"};
+const pages = {'Live': "/", "Video": "/video", 'Messenger': "/"};
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 const ResponsiveAppBar = () => {

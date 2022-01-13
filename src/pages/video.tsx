@@ -24,7 +24,7 @@ export default function Chat() {
           </Head>
 
           <Container maxWidth="sm">
-            <Box sx={{ my: 1 }}>
+            <Box sx={{ my: 3 }}>
               <Video/>
             </Box>
           </Container>

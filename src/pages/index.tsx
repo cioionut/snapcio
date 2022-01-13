@@ -28,7 +28,7 @@ export default function Home() {
           </Head>
 
           <Container maxWidth="sm">
-            <Box sx={{ my: 1 }}>
+            <Box sx={{ my: 3 }}>
               <ChatMain/>
             </Box>
           </Container>

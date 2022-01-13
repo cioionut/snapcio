@@ -1,10 +1,7 @@
 import { useContext, MouseEvent, useRef, useState, useEffect, useCallback } from 'react';
 
-import Box from '@mui/material/Box';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { Box, InputLabel, MenuItem, FormControl, Select, Button, Container, CircularProgress, CardMedia, Card }  from '@mui/material';
+// import { MicIcon }  from '@mui/icons-material';
 
 const mediaConstraints = {
   audio: true,            // We want an audio track
@@ -23,22 +20,18 @@ function handleError(error) {
 export default function Video() {
   const selfVideo = useRef(null);
 
+  const [ devicePermission, setDevicePermission ] = useState(false);
   const [ localStream, setLocalStream ] = useState(null);
   const [ devices, setDevices ] = useState([]);
-  const [ audioInputSelect, setAudioInputSelect ] = useState();
-  const [ videoSelect, setVideoSelect ] = useState();
+  const [ audioInputSelect, setAudioInputSelect ] = useState('');
+  const [ videoSelect, setVideoSelect ] = useState('');
   
-  const videoSources = devices.filter(deviceInfo => deviceInfo.kind === 'videoinput');
-  const videoOptions = videoSources.map(deviceInfo => {
-    let deviceLabel;
-    const deviceId = deviceInfo.deviceId;
-    if (deviceInfo.kind === 'videoinput') {
-      deviceLabel = deviceInfo.label;
-      return <MenuItem value={deviceId} key={deviceId}>{deviceLabel}</MenuItem>
-    } else {
-      console.log('Some other kind of source/device: ', deviceInfo);
-    }
-  });
+  const [ audioSources, setAudioSources ] = useState([]);
+  const [ videoSources, setVideoSources ] = useState([]);
+  const audioOptions = audioSources.map(deviceInfo => 
+    <MenuItem value={deviceInfo.deviceId} key={deviceInfo.deviceId}>{deviceInfo.label}</MenuItem>);
+  const videoOptions = videoSources.map(deviceInfo => 
+    <MenuItem value={deviceInfo.deviceId} key={deviceInfo.deviceId}>{deviceInfo.label}</MenuItem>);
 
   const gotDevices = (deviceInfos) => {
     setDevices(deviceInfos);
@@ -54,77 +47,126 @@ export default function Video() {
     return navigator.mediaDevices.enumerateDevices();
   }
 
-  useEffect(() => {
-    // navigator.mediaDevices.enumerateDevices().then(gotDevices).catch(handleError);
-    navigator.mediaDevices.enumerateDevices().then(setDevices).catch(handleError);
-    start();
-  }, []);
+  const handleStopDevice = useCallback((event=null) => {
+    setDevicePermission(false);
+    // stop already running stream
+    if (localStream) {
+      localStream.getTracks().forEach(track => {
+        track.stop();
+      });
+    };
+    selfVideo.current.srcObject = null;
+    setLocalStream(null);
+  }, [localStream]);
 
-  const start = useCallback((event=null) => {
-    console.log('here', localStream);
-    let vSelect = videoSelect;
-    if (event) {
-      vSelect = event.target.value;
-      setVideoSelect(event.target.value);
-    }
-
+  const start = useCallback((vSelect=videoSelect, audioInSelect=audioInputSelect) => {
+    // stop already running stream
     if (localStream) {
       localStream.getTracks().forEach(track => {
         track.stop();
       });
     }
     const constraints = {
-      // audio: {deviceId: audioInputSelect ? {exact: audioInputSelect} : undefined},
-      audio: true,
+      audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined},
       video: {deviceId: vSelect ? {exact: vSelect} : undefined}
     };
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
-  }, [localStream]);
+  }, [localStream, audioInputSelect, videoSelect]);
 
-  // const getUsrMedia = useCallback(async () => {
-  //   // Get access to the webcam stream and attach it to the
-  //   // "preview" box (id "local_video").
-  //   try {
-  //     const webcamStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-  //     // show media stream
-  //     showVideo(webcamStream, selfVideo.current, true);
-  //     // set for future refs
-  //     setLocalStream(webcamStream);
+  const handleChangeVideo = useCallback(event => {
+    setVideoSelect(event.target.value);
+    start(event.target.value);
+  }, [start]);
 
-  //   } catch(err) {
-  //     handleError(err);
-  //     return;
-  //   }
-  // }, []);
+  const handleChangeAudioInput = useCallback(event => {
+    setAudioInputSelect(event.target.value);
+    start(undefined, event.target.value);
+  }, [start]);
+
+  const handleStartDevice = useCallback((event=null) => {
+    navigator.mediaDevices.enumerateDevices().then(deviceInfos => {
+      setDevices(deviceInfos);
+      const audioSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'audioinput');
+      const videoSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'videoinput')
+      setAudioSources(audioSrcs);
+      setVideoSources(videoSrcs);
+      if (audioSrcs.length > 0) setAudioInputSelect(audioSrcs[0].deviceId);
+      if (videoSrcs.length > 0) setVideoSelect(videoSrcs[0].deviceId);
+    }).catch(handleError);
+    start();
+    setDevicePermission(true);
+  }, [start]);
 
 
   return (
     <>
-      <video className={`${localStream  ? '' : 'brokenvideo'}`} ref={selfVideo}/>
-      {
-        videoSources.length > 0 &&
-        <Box sx={{ minWidth: 120 }}>
-          <FormControl fullWidth>
-            <InputLabel id="demo-simple-select-label">Camera source</InputLabel>
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={videoSources[0].deviceId}
-              label="Select Camera"
-              onChange={start}
-            >
-              { videoOptions }
-            </Select>
-          </FormControl>
+      {/* <Container> */}
+        <Box>
+          { 
+            !devicePermission 
+            ? <Button variant="outlined" onClick={handleStartDevice}>Start Camera</Button> 
+            : <Button variant="outlined" color="error" onClick={handleStopDevice}>Stop Camera</Button>
+          }
         </Box>
-      }
+        <Box sx={{
+          display: 'flex',
+          my: 3,
+          // width: 400,
+          height: 300,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'black'
+        }}
+        > 
+        {
+          !devicePermission
+          ? <CircularProgress />
+          : <video  ref={selfVideo}/>
+        }
+        </Box>
+        {
+          videoSources.length > 0 &&
+          <Box sx={{ minWidth: 120, my: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="select-camera-source-label">Camera source</InputLabel>
+              <Select
+                labelId="select-camera-source-label"
+                id="select-camera-source"
+                value={videoSelect}
+                label="Select Camera"
+                onChange={handleChangeVideo}
+              >
+                { videoOptions }
+              </Select>
+            </FormControl>
+          </Box>
+        }
+        {
+          audioOptions.length > 0 &&
+          <Box sx={{ minWidth: 120, my: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="select-audio-source-label">Audio source</InputLabel>
+              <Select
+                labelId="select-audio-source-label"
+                id="select-audio-source"
+                value={audioInputSelect}
+                label="Select audio"
+                onChange={handleChangeAudioInput}
+              >
+                { audioOptions }
+              </Select>
+            </FormControl>
+          </Box>
+        }
+      {/* </Container> */}
+
 
 
 
       <style jsx>{`
         video {
           max-width: 100%;
-          height: auto;
+          max-height: 100%;
         }
         .video-hflip {
             transform: rotateY(180deg);

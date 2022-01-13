@@ -67,7 +67,7 @@ export default function Layout ({ children }) {
         </Navbar.Collapse>
       </Navbar> */}
 
-      <main id="main-container">
+      <main>
         {children}
       </main>
       {/* <footer className={styles.footer}>
@@ -85,12 +85,6 @@ export default function Layout ({ children }) {
             </Row>
         </Container>
       </footer> */}
-
-      <style jsx>{`
-        #main-container {
-          padding-top: 60px;
-        }
-      `}</style>
     </>
   )
 }
