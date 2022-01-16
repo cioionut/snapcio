@@ -1,7 +1,14 @@
+// nextjs
+import dynamic from 'next/dynamic';
+// react
 import { useContext, MouseEvent, useRef, useState, useEffect, useCallback } from 'react';
-
+// material-ui
 import { Box, InputLabel, MenuItem, FormControl, Select, Button, Container, CircularProgress, CardMedia, Card }  from '@mui/material';
 // import { MicIcon }  from '@mui/icons-material';
+
+// local
+import { StreamsContext } from '../contexts/StreamsContext';
+
 
 const mediaConstraints = {
   audio: true,            // We want an audio track
@@ -17,11 +24,16 @@ function handleError(error) {
 }
 
 
-export default function Video() {
+export default function SelfVideo() {
+
+  const {
+    localStream,
+    setLocalStream
+  } = useContext(StreamsContext);
+
   const selfVideo = useRef(null);
 
   const [ devicePermission, setDevicePermission ] = useState(false);
-  const [ localStream, setLocalStream ] = useState(null);
   const [ devices, setDevices ] = useState([]);
   const [ audioInputSelect, setAudioInputSelect ] = useState('');
   const [ videoSelect, setVideoSelect ] = useState('');
@@ -38,7 +50,7 @@ export default function Video() {
   };
 
   function gotStream(stream, muted=false) {
-    setLocalStream(stream); // make stream available to console
+    setLocalStream(stream); // make stream available
     const video = selfVideo.current;
     video.srcObject = stream;
     video.volume = muted ? 0 : 1;
@@ -109,13 +121,6 @@ export default function Video() {
   return (
     <>
       {/* <Container> */}
-        <Box>
-          { 
-            !devicePermission 
-            ? <Button variant="outlined" onClick={handleStartDevice}>Start Camera</Button> 
-            : <Button variant="outlined" color="error" onClick={handleStopDevice}>Stop Camera</Button>
-          }
-        </Box>
         <Box sx={{
           display: 'flex',
           my: 3,
@@ -131,6 +136,13 @@ export default function Video() {
           ? <CircularProgress />
           : <video  ref={selfVideo}/>
         }
+        </Box>
+        <Box>
+          { 
+            !devicePermission 
+            ? <Button variant="outlined" onClick={handleStartDevice}>Start Camera</Button> 
+            : <Button variant="outlined" color="error" onClick={handleStopDevice}>Stop Camera</Button>
+          }
         </Box>
         {
           devicePermission &&

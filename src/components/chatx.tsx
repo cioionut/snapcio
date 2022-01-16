@@ -113,7 +113,6 @@ function Chat() {
     socket.emit(msg.type, msg);
   }, [socket]);
 
-
   // Close the RTCPeerConnection and reset variables so that the user can
   // make or receive another call if they wish. This is called both
   // when the user hangs up, the other user hangs up, or if a connection
@@ -327,6 +326,7 @@ function Chat() {
     return pc;
   }, []);
 
+  // Set up event handlers for the ICE negotiation process.
   useEffect(()=> {
     if (!myPeerConnection) return;
     // Set up event handlers for the ICE negotiation process.
@@ -556,7 +556,7 @@ function Chat() {
     socket.emit('request-a-match', {
       name: myUsername,
     });
-  }, [socket, myUsername, hangUpCall, targetUsername]);
+  }, [socket, myUsername, targetUsername, hangUpCall]);
 
   return (
     <>

@@ -1,39 +1,68 @@
 // nextjs
 import dynamic from 'next/dynamic';
-// import Link from 'next/link';
+import Link from 'next/link';
 import Head from 'next/head';
-import Box from '@mui/material/Box';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
 
-// import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap';
+// react
+import { useContext, useState, useEffect, useRef, useCallback } from 'react';
+
+// meterial-ui
+import { Box, Button, Container} from '@mui/material';
 
 // locals
-import Link from '../components/global/Link';
 import Layout from '../components/layout';
-
-const ChatMain = dynamic(
-  () => import('../components/chatx'),
+const SelfVideo = dynamic(
+  () => import('../components/selfvideo'),
   { ssr: false }
 );
+import OtherVideo from '../components/othervideo';
+import { WebRTCContext } from '../contexts/WebRTCContext';
+const WebRTCContextProvider = dynamic(() =>
+  import('../contexts/WebRTCContext').then((mod) => mod.WebRTCContextProvider)
+);
+import { StreamsContext, StreamsContextProvider } from '../contexts/StreamsContext';
 
-export default function Home() {
+
+export default function Chat() {
   return (
     <>
       <Layout>
           <Head>
-            <title>Snapcio</title>
+            <title>Chat - Snapcio</title>
             <meta name="description" content="Chat free" />
-            <link rel="icon" href="/favicon.ico" />
           </Head>
-
           <Container maxWidth="sm">
-            <Box sx={{ my: 3 }}>
-              <ChatMain/>
-            </Box>
+            <StreamsContextProvider>
+              <WebRTCContextProvider>
+                <VChat/>
+              </WebRTCContextProvider>
+            </StreamsContextProvider>
           </Container>
         </Layout>
     </>
-    
+  )
+}
+
+const VChat = () => {
+  const {
+    nextUser,
+    availableUsers
+  } = useContext(WebRTCContext);
+
+  return (
+    <>
+      <Box sx={{ my: 3 }}>
+        <OtherVideo/>
+      </Box>
+      <Box sx={{ my: 3 }}>
+        <SelfVideo/>
+      </Box>
+      <Box>
+        <Button variant="contained" onClick={ nextUser }>Skip</Button>
+      </Box>
+      <Box>
+        Available Users: {availableUsers.length}
+      </Box>
+    </>
   )
 }
