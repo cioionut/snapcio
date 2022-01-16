@@ -36,6 +36,7 @@ export default function Video() {
   const gotDevices = (deviceInfos) => {
     setDevices(deviceInfos);
   };
+
   function gotStream(stream, muted=false) {
     setLocalStream(stream); // make stream available to console
     const video = selfVideo.current;
@@ -45,19 +46,7 @@ export default function Video() {
 
     // Refresh button list in case labels have become available
     return navigator.mediaDevices.enumerateDevices();
-  }
-
-  const handleStopDevice = useCallback((event=null) => {
-    setDevicePermission(false);
-    // stop already running stream
-    if (localStream) {
-      localStream.getTracks().forEach(track => {
-        track.stop();
-      });
-    };
-    selfVideo.current.srcObject = null;
-    setLocalStream(null);
-  }, [localStream]);
+  };
 
   const start = useCallback((vSelect=videoSelect, audioInSelect=audioInputSelect) => {
     // stop already running stream
@@ -84,18 +73,37 @@ export default function Video() {
   }, [start]);
 
   const handleStartDevice = useCallback((event=null) => {
+    let vSelect, audioInSelect;
     navigator.mediaDevices.enumerateDevices().then(deviceInfos => {
       setDevices(deviceInfos);
       const audioSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'audioinput');
-      const videoSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'videoinput')
+      const videoSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'videoinput');
       setAudioSources(audioSrcs);
       setVideoSources(videoSrcs);
-      if (audioSrcs.length > 0) setAudioInputSelect(audioSrcs[0].deviceId);
-      if (videoSrcs.length > 0) setVideoSelect(videoSrcs[0].deviceId);
+      if (audioSrcs.length > 0) {
+        audioInSelect = audioSrcs[0].deviceId;
+        setAudioInputSelect(audioInSelect);
+      };
+      if (videoSrcs.length > 0) {
+        vSelect = videoSrcs[0].deviceId;
+        setVideoSelect(vSelect);
+      };
     }).catch(handleError);
-    start();
+    start(vSelect, audioInSelect);
     setDevicePermission(true);
   }, [start]);
+
+  const handleStopDevice = useCallback((event=null) => {
+    setDevicePermission(false);
+    // stop already running stream
+    if (localStream) {
+      localStream.getTracks().forEach(track => {
+        track.stop();
+      });
+    };
+    selfVideo.current.srcObject = null;
+    setLocalStream(null);
+  }, [localStream]);
 
 
   return (
@@ -125,7 +133,7 @@ export default function Video() {
         }
         </Box>
         {
-          videoSources.length > 0 &&
+          devicePermission &&
           <Box sx={{ minWidth: 120, my: 2 }}>
             <FormControl fullWidth>
               <InputLabel id="select-camera-source-label">Camera source</InputLabel>
@@ -142,7 +150,7 @@ export default function Video() {
           </Box>
         }
         {
-          audioOptions.length > 0 &&
+          devicePermission &&
           <Box sx={{ minWidth: 120, my: 2 }}>
             <FormControl fullWidth>
               <InputLabel id="select-audio-source-label">Audio source</InputLabel>
@@ -159,9 +167,6 @@ export default function Video() {
           </Box>
         }
       {/* </Container> */}
-
-
-
 
       <style jsx>{`
         video {
