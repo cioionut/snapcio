@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "rm -rf node_modules/.cache && rimraf out && next build && next export && touch out/.nojekyll && touch out/CNAME && echo \"snapcio.ionkom.com\" >> out/CNAME && gh-pages -d out -t true"
+    "deploy": "rm -rf node_modules/.cache && rimraf out && next build && next export && touch out/.nojekyll && touch out/CNAME && echo \"snapcio.ionkom.com\" >> out/CNAME && gh-pages -d out -t true -b exports -o deploy"
   },
   "dependencies": {
     "@emotion/cache": "^11.7.1",

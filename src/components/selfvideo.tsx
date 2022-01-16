@@ -49,7 +49,7 @@ export default function SelfVideo() {
     setDevices(deviceInfos);
   };
 
-  function gotStream(stream, muted=false) {
+  function gotStream(stream, muted=true) {
     setLocalStream(stream); // make stream available
     const video = selfVideo.current;
     video.srcObject = stream;
@@ -72,7 +72,7 @@ export default function SelfVideo() {
       video: {deviceId: vSelect ? {exact: vSelect} : undefined}
     };
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
-  }, [localStream, audioInputSelect, videoSelect]);
+  }, [localStream, audioInputSelect, videoSelect, gotDevices]);
 
   const handleChangeVideo = useCallback(event => {
     setVideoSelect(event.target.value);
@@ -115,7 +115,7 @@ export default function SelfVideo() {
     };
     selfVideo.current.srcObject = null;
     setLocalStream(null);
-  }, [localStream]);
+  }, [localStream, setLocalStream]);
 
 
   return (
