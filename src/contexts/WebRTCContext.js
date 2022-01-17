@@ -18,7 +18,8 @@ const pcConfig = {
 
 export const WebRTCContext = createContext({
   nextUser: () => {},
-  availableUsers: []
+  availableUsers: [],
+  myUsername: undefined
 });
 
 function useSocket() {
@@ -331,7 +332,7 @@ export const WebRTCContextProvider = ({ children }) => {
         );
       };
     }
-  }, [myPeerConnection, myUsername, localStream, createPeerConnection]);
+  }, [myPeerConnection, myUsername, localStream, createPeerConnection, sendToServer]);
 
   useEffect(() => {
     if (!socket) return;
@@ -472,7 +473,8 @@ export const WebRTCContextProvider = ({ children }) => {
   return (
     <WebRTCContext.Provider value={{
       nextUser,
-      availableUsers
+      availableUsers,
+      myUsername
     }}>
       {children}
     </WebRTCContext.Provider>

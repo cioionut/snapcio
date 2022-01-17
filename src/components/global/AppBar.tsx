@@ -135,15 +135,18 @@ const ResponsiveAppBar = () => {
           
           {/* display always */}
           <Box sx={{ flexGrow: 0 }}>
-            {theme.palette.mode} mode
-            <IconButton sx={{ ml: 1 }} onClick={colorMode.toggleColorMode} color="inherit">
+            {/* {theme.palette.mode} mode */}
+            <IconButton 
+              sx={{ ml: 1 }} 
+              aria-label="switch between lignt and dark mode"
+              onClick={colorMode.toggleColorMode} color="inherit">
               {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
             </IconButton>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="I" src="/static/images/avatar/2.jpg" />
+                <Avatar alt="I"/>
               </IconButton>
             </Tooltip>
             <Menu

@@ -46,22 +46,26 @@ export default function Chat() {
 const VChat = () => {
   const {
     nextUser,
-    availableUsers
+    availableUsers,
+    myUsername
   } = useContext(WebRTCContext);
 
   return (
     <>
-      <Box sx={{ my: 3 }}>
+      <Box sx={{ my: 1 }}>
         <OtherVideo/>
       </Box>
-      <Box sx={{ my: 3 }}>
-        <SelfVideo/>
+      <Box sx={{ my: 1 }}>
+        <SelfVideo hFlip={true}/>
       </Box>
-      <Box>
+      <Box sx={{ my: 1 }}>
         <Button variant="contained" onClick={ nextUser }>Skip</Button>
       </Box>
-      <Box>
+      <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}
+      </Box>
+      <Box sx={{ my: 1 }}>
+        MY Socket Id: {myUsername}
       </Box>
     </>
   )

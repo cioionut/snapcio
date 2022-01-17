@@ -16,10 +16,6 @@ const SelfVideo = dynamic(
   { ssr: false }
 );
 import OtherVideo from '../components/othervideo';
-import { WebRTCContext } from '../contexts/WebRTCContext';
-const WebRTCContextProvider = dynamic(() =>
-  import('../contexts/WebRTCContext').then((mod) => mod.WebRTCContextProvider)
-);
 import { StreamsContext, StreamsContextProvider } from '../contexts/StreamsContext';
 
 
@@ -33,36 +29,10 @@ export default function Chat() {
           </Head>
           <Container maxWidth="sm">
             <StreamsContextProvider>
-              <WebRTCContextProvider>
-                <VChat/>
-              </WebRTCContextProvider>
+              <SelfVideo defaultMute={false} />
             </StreamsContextProvider>
           </Container>
         </Layout>
-    </>
-  )
-}
-
-const VChat = () => {
-  const {
-    nextUser,
-    availableUsers
-  } = useContext(WebRTCContext);
-
-  return (
-    <>
-      <Box sx={{ my: 3 }}>
-        <OtherVideo/>
-      </Box>
-      <Box sx={{ my: 3 }}>
-        <SelfVideo/>
-      </Box>
-      <Box>
-        <Button variant="contained" onClick={ nextUser }>Skip</Button>
-      </Box>
-      <Box>
-        Available Users: {availableUsers.length}
-      </Box>
     </>
   )
 }

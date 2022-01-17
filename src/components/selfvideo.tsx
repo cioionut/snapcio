@@ -1,5 +1,3 @@
-// nextjs
-import dynamic from 'next/dynamic';
 // react
 import { useContext, MouseEvent, useRef, useState, useEffect, useCallback } from 'react';
 // material-ui
@@ -9,9 +7,14 @@ import { Box, InputLabel, MenuItem, FormControl, Select, Button, Container, Circ
 // local
 import { StreamsContext } from '../contexts/StreamsContext';
 
+// Output an error message to console.
+function log_error(text) {
+  const time = new Date();
+  console.trace("[" + time.toLocaleTimeString() + "] " + text);
+}
 
 const mediaConstraints = {
-  audio: true,            // We want an audio track
+  audio: { echoCancellation: true },            // We want an audio track
   video: {
     aspectRatio: {
       ideal: 1.333333     // 3:2 aspect is preferred
@@ -19,12 +22,31 @@ const mediaConstraints = {
   }
 };
 
-function handleError(error) {
-  console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+// Handle errors which occur when trying to access the local media
+// hardware; that is, exceptions thrown by getUserMedia(). The two most
+// likely scenarios are that the user has no camera and/or microphone
+// or that they declined to share their equipment when prompted. If
+// they simply opted not to share their media, that's not really an
+// error, so we won't present a message in that situation.
+const handleGetUserMediaError = (error) => {
+  log_error(error);
+  switch(error.name) {
+    case "NotFoundError":
+      alert("Unable to open your call because no camera and/or microphone" +
+            "were found.");
+      break;
+    case "SecurityError":
+    case "PermissionDeniedError":
+      // Do nothing; this is the same as the user canceling the call.
+      break;
+    default:
+      alert("Error opening your camera and/or microphone: " + error.message);
+      break;
+  }
 }
 
 
-export default function SelfVideo() {
+export default function SelfVideo({ defaultMute=true, hFlip=false }) {
 
   const {
     localStream,
@@ -45,11 +67,35 @@ export default function SelfVideo() {
   const videoOptions = videoSources.map(deviceInfo => 
     <MenuItem value={deviceInfo.deviceId} key={deviceInfo.deviceId}>{deviceInfo.label}</MenuItem>);
 
+
+  useEffect(() => {
+    if (localStream && videoSources.length > 0) {
+      const videoTracks = localStream.getVideoTracks();
+      const currentTrack = videoTracks ? videoTracks[0] : undefined;
+      const mediaSrc = videoSources.find(mediaSrc => mediaSrc.label === currentTrack.label);
+      setVideoSelect(mediaSrc.deviceId);
+    }
+  }, [videoSources, localStream]);
+
+  useEffect(() => {
+    if (localStream && audioSources.length > 0) {
+      const audioTracks = localStream.getAudioTracks();
+      const currentTrack = audioTracks ? audioTracks[0] : undefined;
+      const mediaSrc = audioSources.find(mediaSrc => mediaSrc.label === currentTrack.label);
+      setAudioInputSelect(mediaSrc.deviceId);
+    }
+  }, [audioSources, localStream]);
+
   const gotDevices = (deviceInfos) => {
     setDevices(deviceInfos);
+    const audioSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'audioinput');
+    const videoSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'videoinput');
+    setAudioSources(audioSrcs);
+    setVideoSources(videoSrcs);
   };
 
-  function gotStream(stream, muted=true) {
+  function gotStream(stream, muted=defaultMute) {
+    setDevicePermission(true);
     setLocalStream(stream); // make stream available
     const video = selfVideo.current;
     video.srcObject = stream;
@@ -71,7 +117,7 @@ export default function SelfVideo() {
       audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined},
       video: {deviceId: vSelect ? {exact: vSelect} : undefined}
     };
-    navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleError);
+    navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleGetUserMediaError);
   }, [localStream, audioInputSelect, videoSelect, gotDevices]);
 
   const handleChangeVideo = useCallback(event => {
@@ -85,24 +131,7 @@ export default function SelfVideo() {
   }, [start]);
 
   const handleStartDevice = useCallback((event=null) => {
-    let vSelect, audioInSelect;
-    navigator.mediaDevices.enumerateDevices().then(deviceInfos => {
-      setDevices(deviceInfos);
-      const audioSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'audioinput');
-      const videoSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'videoinput');
-      setAudioSources(audioSrcs);
-      setVideoSources(videoSrcs);
-      if (audioSrcs.length > 0) {
-        audioInSelect = audioSrcs[0].deviceId;
-        setAudioInputSelect(audioInSelect);
-      };
-      if (videoSrcs.length > 0) {
-        vSelect = videoSrcs[0].deviceId;
-        setVideoSelect(vSelect);
-      };
-    }).catch(handleError);
-    start(vSelect, audioInSelect);
-    setDevicePermission(true);
+    start();
   }, [start]);
 
   const handleStopDevice = useCallback((event=null) => {
@@ -123,7 +152,7 @@ export default function SelfVideo() {
       {/* <Container> */}
         <Box sx={{
           display: 'flex',
-          my: 3,
+          my: 1,
           // width: 400,
           height: 300,
           justifyContent: 'center',
@@ -134,7 +163,7 @@ export default function SelfVideo() {
         {
           !devicePermission
           ? <CircularProgress />
-          : <video  ref={selfVideo}/>
+          : <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
         }
         </Box>
         <Box>
@@ -145,7 +174,7 @@ export default function SelfVideo() {
           }
         </Box>
         {
-          devicePermission &&
+          videoSelect != '' &&
           <Box sx={{ minWidth: 120, my: 2 }}>
             <FormControl fullWidth>
               <InputLabel id="select-camera-source-label">Camera source</InputLabel>
@@ -162,7 +191,7 @@ export default function SelfVideo() {
           </Box>
         }
         {
-          devicePermission &&
+          audioInputSelect != '' &&
           <Box sx={{ minWidth: 120, my: 2 }}>
             <FormControl fullWidth>
               <InputLabel id="select-audio-source-label">Audio source</InputLabel>
