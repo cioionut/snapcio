@@ -2,9 +2,11 @@ import * as React from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import useMediaQuery from '@mui/material/useMediaQuery';
+// import useMediaQuery from '@mui/material/useMediaQuery';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
+
+// import { useCookies } from "react-cookie";
 
 // local
 import createEmotionCache from '../lib/createEmotionCache';
@@ -21,6 +23,7 @@ import ColorModeContext from '../contexts/ColorModeContext';
 const clientSideEmotionCache = createEmotionCache();
 
 function MyApp(props) {
+  // const [cookies, setCookie] = useCookies(['colorMode']);  
 
   // emotion
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
@@ -30,12 +33,20 @@ function MyApp(props) {
     i18next.changeLanguage(pageProps.locale);
 
   // color mode
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = React.useState(prefersDarkMode ? 'dark' : 'light');
+  // let prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  // console.log(cookies.colorMode ?? 'light')
+  // const startMode = prefersDarkMode ? 'dark' : cookies.colorMode;
+  // console.log(startMode, cookies.colorMode);
+
+  const [mode, setMode] = React.useState('light');
   const colorMode = React.useMemo(
     () => ({
       toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        setMode((prevMode) => {
+          const newMode = prevMode === 'light' ? 'dark' : 'light';
+          // setCookie('colorMode', newMode, { path: '/', maxAge: 7889231 });
+          return newMode
+        });
       },
     }),
     [],
@@ -50,6 +61,8 @@ function MyApp(props) {
       }),
     [mode],
   );
+
+  // console.log(mode, theme.palette.mode)
 
   return (
     <CacheProvider value={emotionCache}>
