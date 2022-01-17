@@ -114,7 +114,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
       });
     }
     const constraints = {
-      audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined},
+      audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined, echoCancellation: true },
       video: {deviceId: vSelect ? {exact: vSelect} : undefined}
     };
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleGetUserMediaError);
