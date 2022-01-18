@@ -9,6 +9,8 @@ import Typography from '@mui/material/Typography';
 
 import Link from './global/Link';
 import AppBar from './global/AppBar';
+import BottomBar from './global/BottomNav';
+
 // import Copyright from '../src/Copyright';
 
 // import { Container, Row, Col, Nav, Navbar } from 'react-bootstrap';
@@ -70,6 +72,8 @@ export default function Layout ({ children }) {
       <main>
         {children}
       </main>
+
+      <BottomBar/>
       {/* <footer className={styles.footer}>
         <Container fluid>
             <Row>

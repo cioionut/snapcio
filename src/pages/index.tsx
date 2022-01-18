@@ -7,7 +7,15 @@ import Head from 'next/head';
 import { useContext, useState, useEffect, useRef, useCallback } from 'react';
 
 // meterial-ui
-import { Box, Button, Container} from '@mui/material';
+import { Box, Button, IconButton, ButtonGroup, Container, Grid, Fab} from '@mui/material';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
+import CachedIcon from '@mui/icons-material/Cached';
+import ReplayIcon from '@mui/icons-material/Replay';
+
+import { green, yellow, red } from '@mui/material/colors';
 
 // locals
 import Layout from '../components/layout';
@@ -31,17 +39,40 @@ export default function Chat() {
             <title>Chat - Snapcio</title>
             <meta name="description" content="Chat free" />
           </Head>
-          <Container maxWidth="sm">
-            <StreamsContextProvider>
-              <WebRTCContextProvider>
-                <VChat/>
-              </WebRTCContextProvider>
-            </StreamsContextProvider>
-          </Container>
-        </Layout>
+          <StreamsContextProvider>
+            <WebRTCContextProvider>
+              <VChat/>
+            </WebRTCContextProvider>
+          </StreamsContextProvider>
+      </Layout>
     </>
   )
 }
+
+const fabYellowStyle = {
+  color: 'common.white',
+  bgcolor: '#ed6c02',
+  '&:hover': {
+    bgcolor: yellow[900],
+  },
+};
+
+const fabRedStyle = {
+  color: 'common.white',
+  bgcolor: red[500],
+  '&:hover': {
+    bgcolor: red[600],
+  },
+};
+
+const fabGreenStyle = {
+  color: 'common.white',
+  bgcolor: green[500],
+  '&:hover': {
+    bgcolor: green[600],
+  },
+};
+
 
 const VChat = () => {
   const {
@@ -52,21 +83,72 @@ const VChat = () => {
 
   return (
     <>
-      <Box sx={{ my: 1 }}>
-        <OtherVideo/>
+    <Container maxWidth="xl">
+      {/* small screens */}
+      <Box sx={{ display: { md: 'none' } }}>
+        <Box sx={{ mt: 1 }}>
+          <OtherVideo/>
+        </Box>
+        <Box sx={{ mb: 1 }}>
+          <SelfVideo hFlip={true}/>
+        </Box>
       </Box>
-      <Box sx={{ my: 1 }}>
-        <SelfVideo hFlip={true}/>
+
+      {/* large screens */}
+      <Box sx={{ display: { xs: 'none', md: 'block'} }}>
+        <Grid sx={{ my: 1}} container spacing={2}>
+          <Grid item xs={6}>
+            <OtherVideo/>
+          </Grid>
+          <Grid item xs={6}>
+            <SelfVideo hFlip={true}/>
+          </Grid>          
+        </Grid>
       </Box>
-      <Box sx={{ my: 1 }}>
-        <Button variant="contained" onClick={ nextUser }>Skip</Button>
+    </Container>
+
+    <Container maxWidth="sm">
+      {/* control buttons */}
+
+      <Box sx={{ 
+        '& > :not(style)': { m: 1 },
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        {/* <ButtonGroup aria-label="button group" > */}
+            {/* <Button 
+              color="success"
+              size='large' variant="contained" 
+              startIcon={<AutorenewIcon />} 
+              onClick={ nextUser }
+            >
+                Skip
+            </Button> */}
+        <Fab size='small' color="inherit" aria-label="replay" sx={{ ...fabYellowStyle }}>
+          <ReplayIcon />
+        </Fab>
+        <Fab aria-label="skipnext" sx={{ ...fabGreenStyle }} onClick={ nextUser }>
+          <AutorenewIcon fontSize='large'/>
+          {/* <CachedIcon sx={{ width: 35, height: 35}} /> */}
+        </Fab>
+        {/* <Fab size='small' aria-label="fav" >
+          <FavoriteBorderIcon />
+        </Fab> */}
+        <IconButton aria-label="fav">
+          <FavoriteBorderIcon />
+        </IconButton>
+        {/* </ButtonGroup> */}
       </Box>
+
       <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}
       </Box>
-      <Box sx={{ my: 1 }}>
+      <Box sx={{ mb: 10 }}>
         MY Socket Id: {myUsername}
       </Box>
+    </Container>
+      
     </>
   )
 }

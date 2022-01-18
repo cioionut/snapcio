@@ -18,6 +18,7 @@ const pcConfig = {
 
 export const WebRTCContext = createContext({
   nextUser: () => {},
+  closeVideoCall: () => {},
   availableUsers: [],
   myUsername: undefined
 });
@@ -473,6 +474,7 @@ export const WebRTCContextProvider = ({ children }) => {
   return (
     <WebRTCContext.Provider value={{
       nextUser,
+      closeVideoCall,
       availableUsers,
       myUsername
     }}>

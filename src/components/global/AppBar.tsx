@@ -12,9 +12,10 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 
-import { useTheme } from '@mui/material/styles';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+
+import { useTheme } from '@mui/material/styles';
 
 // color context
 import ColorModeContext from '../../contexts/ColorModeContext';
@@ -146,7 +147,10 @@ const ResponsiveAppBar = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="I"/>
+                <Avatar 
+                  alt="I"
+                  sx={{ width: 30, height: 30 }}
+                />
               </IconButton>
             </Tooltip>
             <Menu

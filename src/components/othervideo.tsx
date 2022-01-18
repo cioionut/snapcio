@@ -28,12 +28,10 @@ export default function OtherVideo() {
       {/* <Container> */}
         <Box sx={{
           display: 'flex',
-          my: 3,
-          // width: 400,
-          height: 300,
+          height: { xs: 300, md: 500 },
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: 'black',
+          backgroundColor: 'gray',
           // backgroundImage: 'url("/broken_stream.gif")',
         }}
         > 
