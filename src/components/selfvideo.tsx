@@ -55,7 +55,7 @@ const handleGetUserMediaError = (error) => {
 
 export default function SelfVideo({ defaultMute=true, hFlip=false }) {
   const {
-    closeVideoCall
+    hangUpCall
   } = useContext(WebRTCContext);
   const {
     localStream,
@@ -155,8 +155,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
     selfVideo.current.srcObject = null;
     setLocalStream(null);
     // fix the hanhupcall
-    // closeVideoCall();
-  }, [localStream, setLocalStream]);
+    hangUpCall();
+  }, [localStream, setLocalStream, hangUpCall]);
 
 
   return (

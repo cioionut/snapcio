@@ -18,7 +18,7 @@ const pcConfig = {
 
 export const WebRTCContext = createContext({
   nextUser: () => {},
-  closeVideoCall: () => {},
+  hangUpCall: () => {},
   availableUsers: [],
   myUsername: undefined
 });
@@ -71,6 +71,7 @@ export const WebRTCContextProvider = ({ children }) => {
   const {
     localStream,
     setLocalStream,
+    remoteStream,
     setRemoteStream
   } = useContext(StreamsContext);
 
@@ -80,7 +81,7 @@ export const WebRTCContextProvider = ({ children }) => {
   // users
   const [ availableUsers, setAvailableUsers ] = useState([]);
   const [ myUsername, setMyUsername ] = useState(null);      // To store my username
-  const [ targetUsername, setTargetUsername ] = useState(null);      // To store username of other peer
+  const [ targetUsername, setTargetUsername ] = useState(undefined);      // To store username of other peer
   
 
   // Send a JavaScript object by converting it to JSON and sending
@@ -111,29 +112,30 @@ export const WebRTCContextProvider = ({ children }) => {
       myPeerConnection.onnotificationneeded = null;
 
       // Stop all transceivers on the connection
-      myPeerConnection.getTransceivers().forEach(transceiver => {
-        transceiver.stop();
-      });
+      if (myPeerConnection.connectionState != 'close')
+        myPeerConnection.getTransceivers().forEach(transceiver => {
+          transceiver.stop();
+        });
 
-      // Stop the webcam preview as well by pausing the <video>
-      // element, then stopping each of the getUserMedia() tracks
-      // on it.
-      // if (localVideo.srcObject) {
-      //   localVideo.pause();
-      //   localVideo.srcObject.getTracks().forEach(track => {
-      //     track.stop();
-      //   });
-      // }
+      // Stop the remote webcam as well by pausing the <video>
+      // element, then stopping each of the getUserMedia() tracks on it.
+      if (remoteStream && remoteStream.srcObject) {
+        remoteStream.pause();
+        remoteStream.srcObject.getTracks().forEach(track => {
+          track.stop();
+        });
+      };
+      setRemoteStream(null);
 
       // Close the peer connection
       myPeerConnection.close();
       setMyPeerConnection(null);
-      // setLocalStream(null);
     }
-
-    // Disable the hangup button
-    setTargetUsername(null);
   }, [myPeerConnection]);
+
+  useEffect(()=>{
+    console.log(">>>>>>>>>", targetUsername)
+  }, [targetUsername])
 
   // Hang up the call by closing our end of the connection, then
   // sending a "hang-up" message to the other peer (keep in mind that
@@ -141,18 +143,21 @@ export const WebRTCContextProvider = ({ children }) => {
   // the other peer that the connection should be terminated and the UI
   // returned to the "no call in progress" state.
   const hangUpCall = useCallback(() => {
-    closeVideoCall();
-    sendToServer({
-      name: myUsername,
-      target: targetUsername,
-      type: "hang-up"
-    });
-    setTargetUsername(null);
+    console.log(">>>>>>>hang up to", targetUsername)
+    if (targetUsername) {
+      log("*** Hang up the call");
+      closeVideoCall();
+      sendToServer({
+        name: myUsername,
+        target: targetUsername,
+        type: "hang-up"
+      });
+      setTargetUsername(null);
+    }
   }, [closeVideoCall, sendToServer, myUsername, targetUsername]);
 
   const nextUser = useCallback(() => {
-    if (targetUsername)
-      hangUpCall();
+    hangUpCall();
     socket.emit('request-a-match', {
       name: myUsername,
     });
@@ -181,9 +186,9 @@ export const WebRTCContextProvider = ({ children }) => {
     switch(myPeerConnection.iceConnectionState) {
       case "closed":
       case "failed":
-      case "disconnected":
         closeVideoCall();
         break;
+      case "disconnected":
     }
   }, [myPeerConnection, closeVideoCall]);
 
@@ -265,7 +270,6 @@ export const WebRTCContextProvider = ({ children }) => {
   // it to the <video> element for incoming media.
   const handleTrackEvent = useCallback(function (event) {
     log("*** Track event: show remote stream");
-    // showVideo(event.streams[0], otherVideo.current, false);
     setRemoteStream(event.streams[0]);
   }, []); // depends on received video html element
 
@@ -333,19 +337,19 @@ export const WebRTCContextProvider = ({ children }) => {
         );
       };
     }
-  }, [myPeerConnection, myUsername, localStream, createPeerConnection, sendToServer]);
+  }, [myPeerConnection, myUsername, localStream, createPeerConnection, sendToServer, setTargetUsername]);
 
   useEffect(() => {
     if (!socket) return;
    
     // user mnagement functions
     const updateUserList = ({ users }) => {
-      log(`updateUserList::ids: ${users}`);
+      log(`usr::updateUserList::ids: ${users}`);
       // todo: find a better way to update the list
       setAvailableUsers(users.filter(usr=> usr != socket.id));
     }
     const removeUser = ({ socketId }) => {
-      log(`removeUser::ids: ${socketId}`);
+      log(`usr::removeUser::ids: ${socketId}`);
       // todo: find a better way to update the list
       setAvailableUsers(availableUsers.filter(usrSocketId => usrSocketId != socketId));
     };
@@ -367,7 +371,7 @@ export const WebRTCContextProvider = ({ children }) => {
     // stream, then create and send an answer to the caller.
     async function handleVideoOfferMsg(msg) {
       const targetUser = msg.name;
-      // set for furure reference
+      // set for future reference
       setTargetUsername(targetUser);
       let mpc = myPeerConnection;
 
@@ -474,7 +478,7 @@ export const WebRTCContextProvider = ({ children }) => {
   return (
     <WebRTCContext.Provider value={{
       nextUser,
-      closeVideoCall,
+      hangUpCall,
       availableUsers,
       myUsername
     }}>
