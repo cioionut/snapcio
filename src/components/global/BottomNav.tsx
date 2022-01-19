@@ -16,26 +16,24 @@ export default function LabelBottomNavigation() {
   };
 
   return (
-    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
-      <Container maxWidth="sm">
-        <BottomNavigation value={value} onChange={handleChange}>
-          <BottomNavigationAction
-              // label="home"
-              value="home"
-              icon={<HomeIcon />}
-          />
-          <BottomNavigationAction
-              // label="Favorites"
-              value="favorites"
-              icon={<FavoriteIcon />}
-          />
-          <BottomNavigationAction
-              // label="Chat"
-              value="chat"
-              icon={<AssistantIcon />}
-          />
-        </BottomNavigation>
-      </Container>
+    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3} color='primary'>
+      <BottomNavigation value={value} onChange={handleChange}>
+        <BottomNavigationAction
+            // label="home" 
+            value="home"
+            icon={<HomeIcon />}
+        />
+        <BottomNavigationAction
+            // label="Favorites"
+            value="favorites"
+            icon={<FavoriteIcon />}
+        />
+        <BottomNavigationAction
+            // label="Chat"
+            value="chat"
+            icon={<AssistantIcon />}
+        />
+      </BottomNavigation>
     </Paper>
   );
 }
