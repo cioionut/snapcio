@@ -55,7 +55,8 @@ const handleGetUserMediaError = (error) => {
 
 export default function SelfVideo({ defaultMute=true, hFlip=false }) {
   const {
-    hangUpCall
+    hangUpCall,
+    peerConnection
   } = useContext(WebRTCContext);
   const {
     localStream,
@@ -96,15 +97,15 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
     }
   }, [audioSources, localStream]);
 
-  const gotDevices = (deviceInfos) => {
+  const gotDevices = useCallback((deviceInfos) => {
     setDevices(deviceInfos);
     const audioSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'audioinput');
     const videoSrcs = deviceInfos.filter(deviceInfo => deviceInfo.kind === 'videoinput');
     setAudioSources(audioSrcs);
     setVideoSources(videoSrcs);
-  };
+  }, []);
 
-  function gotStream(stream, muted=defaultMute) {
+  const gotStream = useCallback((stream, muted=defaultMute) => {
     setDevicePermission(true);
     setLocalStream(stream); // make stream available
     const video = selfVideo.current;
@@ -114,7 +115,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
 
     // Refresh button list in case labels have become available
     return navigator.mediaDevices.enumerateDevices();
-  };
+  }, [selfVideo, defaultMute, setLocalStream]);
 
   const start = useCallback((vSelect=videoSelect, audioInSelect=audioInputSelect) => {
     // stop already running stream
@@ -128,7 +129,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
       video: {deviceId: vSelect ? {exact: vSelect} : undefined}
     };
     navigator.mediaDevices.getUserMedia(constraints).then(gotStream).then(gotDevices).catch(handleGetUserMediaError);
-  }, [localStream, audioInputSelect, videoSelect, gotDevices]);
+  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices]);
 
   const handleChangeVideo = useCallback(event => {
     setVideoSelect(event.target.value);
@@ -158,6 +159,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
     hangUpCall();
   }, [localStream, setLocalStream, hangUpCall]);
 
+  const shouldShowdeviceSettings = !peerConnection || (peerConnection && ['failed', 'closed'].includes(peerConnection.connectionState));
 
   return (
     <>
@@ -182,7 +184,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
           : <Button variant="outlined" color="error" onClick={handleStopDevice} startIcon={<StopIcon />}>Stop Live</Button>
         }
         {
-          !devicePermission &&
+          shouldShowdeviceSettings &&
           <IconButton aria-label="settings" onClick={() => {setShowSettings(!showSettings && devicePermission)}} >
             <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
           </IconButton>
@@ -191,7 +193,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
       </Box>
       
       {
-        showSettings && videoSelect != '' &&
+        shouldShowdeviceSettings && showSettings && videoSelect != '' &&
         <Box sx={{ minWidth: 120, my: 2 }}>
           <FormControl fullWidth>
             <InputLabel id="select-camera-source-label">Camera source</InputLabel>
@@ -208,7 +210,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
         </Box>
       }
       {
-        showSettings && audioInputSelect != '' &&
+        shouldShowdeviceSettings && showSettings && audioInputSelect != '' &&
         <Box sx={{ minWidth: 120, my: 2 }}>
           <FormControl fullWidth>
             <InputLabel id="select-audio-source-label">Audio source</InputLabel>

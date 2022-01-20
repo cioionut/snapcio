@@ -35,12 +35,11 @@ function MyApp(props) {
   const [mode, setMode] = React.useState('light');
 
   React.useEffect(() => {
-  const startMode = cookies.colorMode ?? 'light';
+    const startMode = cookies.colorMode ?? 'light';
     setMode(startMode);
   }, []);
 
-  const colorMode = React.useMemo(
-    () => ({
+  const colorMode = React.useMemo(() => ({
       toggleColorMode: () => {
         setMode((prevMode) => {
           const newMode = prevMode === 'light' ? 'dark' : 'light';
@@ -48,9 +47,7 @@ function MyApp(props) {
           return newMode
         });
       },
-    }),
-    [],
-  );
+  }), [setCookie]);
 
   const theme = React.useMemo(
     () =>

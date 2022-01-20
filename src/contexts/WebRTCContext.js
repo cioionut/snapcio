@@ -20,7 +20,8 @@ export const WebRTCContext = createContext({
   nextUser: () => {},
   hangUpCall: () => {},
   availableUsers: [],
-  myUsername: undefined
+  myUsername: undefined,
+  peerConnection: null
 });
 
 function useSocket() {
@@ -473,7 +474,8 @@ export const WebRTCContextProvider = ({ children }) => {
       nextUser,
       hangUpCall,
       availableUsers,
-      myUsername
+      myUsername,
+      peerConnection: myPeerConnection
     }}>
       {children}
     </WebRTCContext.Provider>
