@@ -81,6 +81,10 @@ const VChat = () => {
     myUsername
   } = useContext(WebRTCContext);
 
+  const {
+    localStream,
+  } = useContext(StreamsContext);
+
   return (
     <>
     <Container maxWidth="xl">
@@ -125,10 +129,10 @@ const VChat = () => {
             >
                 Skip
             </Button> */}
-        <Fab size='small' color="inherit" aria-label="replay" sx={{ ...fabYellowStyle }}>
+        <Fab size='small' color="inherit" aria-label="replay" sx={{ ...fabYellowStyle }} disabled>
           <ReplayIcon />
         </Fab>
-        <Fab aria-label="skipnext" sx={{ ...fabGreenStyle }} onClick={ nextUser }>
+        <Fab aria-label="skipnext" sx={{ ...fabGreenStyle }} onClick={ nextUser } disabled={ !localStream }>
           <AutorenewIcon fontSize='large'/>
           {/* <CachedIcon sx={{ width: 35, height: 35}} /> */}
         </Fab>

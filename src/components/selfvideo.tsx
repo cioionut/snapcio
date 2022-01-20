@@ -181,9 +181,13 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
           ? <Button variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}>GO LIVE</Button> 
           : <Button variant="outlined" color="error" onClick={handleStopDevice} startIcon={<StopIcon />}>Stop Live</Button>
         }
-        <IconButton aria-label="settings" onClick={() => {setShowSettings(!showSettings && devicePermission)}} >
-          <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
-        </IconButton>
+        {
+          !devicePermission &&
+          <IconButton aria-label="settings" onClick={() => {setShowSettings(!showSettings && devicePermission)}} >
+            <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
+          </IconButton>
+        }
+
       </Box>
       
       {

@@ -70,13 +70,11 @@ export const WebRTCContextProvider = ({ children }) => {
   // webrtc
   const {
     localStream,
-    setLocalStream,
     remoteStream,
     setRemoteStream
   } = useContext(StreamsContext);
 
   const [ myPeerConnection, setMyPeerConnection ] = useState(null);    // RTCPeerConnection
-  const [ transceiver, setTransceiver ] = useState([null]);    // RTCRtpTransceiver
 
   // users
   const [ availableUsers, setAvailableUsers ] = useState([]);
@@ -133,17 +131,12 @@ export const WebRTCContextProvider = ({ children }) => {
     }
   }, [myPeerConnection]);
 
-  useEffect(()=>{
-    console.log(">>>>>>>>>", targetUsername)
-  }, [targetUsername])
-
   // Hang up the call by closing our end of the connection, then
   // sending a "hang-up" message to the other peer (keep in mind that
   // the signaling is done on a different connection). This notifies
   // the other peer that the connection should be terminated and the UI
   // returned to the "no call in progress" state.
   const hangUpCall = useCallback(() => {
-    console.log(">>>>>>>hang up to", targetUsername)
     if (targetUsername) {
       log("*** Hang up the call");
       closeVideoCall();
