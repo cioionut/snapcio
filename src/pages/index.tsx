@@ -78,7 +78,8 @@ const VChat = () => {
   const {
     nextUser,
     availableUsers,
-    myUsername
+    myUsername,
+    targetUsername
   } = useContext(WebRTCContext);
 
   const {
@@ -150,6 +151,9 @@ const VChat = () => {
       </Box>
       <Box sx={{ mb: 10 }}>
         MY Socket Id: {myUsername}
+      </Box>
+      <Box sx={{ mb: 10 }}>
+        Peer Socket Id: {targetUsername}
       </Box>
     </Container>
       

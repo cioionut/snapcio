@@ -21,6 +21,7 @@ export const WebRTCContext = createContext({
   hangUpCall: () => {},
   availableUsers: [],
   myUsername: undefined,
+  targetUsername: undefined,
   peerConnection: null
 });
 
@@ -125,6 +126,9 @@ export const WebRTCContextProvider = ({ children }) => {
         });
       };
       setRemoteStream(null);
+      
+      // clear target user
+      setTargetUsername(null);
 
       // Close the peer connection
       myPeerConnection.close();
@@ -146,7 +150,6 @@ export const WebRTCContextProvider = ({ children }) => {
         target: targetUsername,
         type: "hang-up"
       });
-      setTargetUsername(null);
     }
   }, [closeVideoCall, sendToServer, myUsername, targetUsername]);
 
@@ -340,9 +343,10 @@ export const WebRTCContextProvider = ({ children }) => {
     const updateUserList = ({ users }) => {
       log(`usr::updateUserList::ids: ${users}`);
       // todo: find a better way to update the list
-      setAvailableUsers(users.filter(usr=> usr != socket.id));
+      setAvailableUsers(users.filter(usr=> (usr != socket.id && usr != targetUsername)));
     }
     const removeUser = ({ socketId }) => {
+      // NOT USED
       log(`usr::removeUser::ids: ${socketId}`);
       // todo: find a better way to update the list
       setAvailableUsers(availableUsers.filter(usrSocketId => usrSocketId != socketId));
@@ -475,6 +479,7 @@ export const WebRTCContextProvider = ({ children }) => {
       hangUpCall,
       availableUsers,
       myUsername,
+      targetUsername,
       peerConnection: myPeerConnection
     }}>
       {children}
