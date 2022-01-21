@@ -149,7 +149,7 @@ const VChat = () => {
       <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}
       </Box>
-      <Box sx={{ mb: 10 }}>
+      <Box sx={{ my: 1 }}>
         MY Socket Id: {myUsername}
       </Box>
       <Box sx={{ mb: 10 }}>
