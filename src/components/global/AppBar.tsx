@@ -74,7 +74,7 @@ const ResponsiveAppBar = () => {
   ));
 
   return (
-    <AppBar position="static" color="primary">
+    <AppBar position="static" color="primary" sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 
@@ -83,7 +83,7 @@ const ResponsiveAppBar = () => {
             variant="h6"
             noWrap
             component="div"
-            sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
+            sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
           >
             Snapcio
           </Typography>
@@ -126,17 +126,17 @@ const ResponsiveAppBar = () => {
             variant="h6"
             noWrap
             component="div"
-            sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
+            sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
           >
             Snapcio
           </Typography>
+
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
             { pageButtons }
           </Box>
           
           {/* display always */}
           <Box sx={{ flexGrow: 0 }}>
-            {/* {theme.palette.mode} mode */}
             <IconButton 
               sx={{ ml: 1 }} 
               aria-label="switch between lignt and dark mode"

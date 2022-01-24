@@ -88,10 +88,10 @@ const VChat = () => {
 
   return (
     <>
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ px: { xs: 0 } }}>
       {/* small screens */}
       <Box sx={{ display: { md: 'none' } }}>
-        <Box sx={{ mt: 1 }}>
+        <Box sx={{ mt: 0 }}>
           <OtherVideo/>
         </Box>
         <Box sx={{ mb: 1 }}>
@@ -112,24 +112,17 @@ const VChat = () => {
       </Box>
     </Container>
 
-    <Container maxWidth="sm">
-      {/* control buttons */}
 
+
+    <Container maxWidth="sm" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, mb: 8 }}>
+      {/* control buttons */}
       <Box sx={{ 
         '& > :not(style)': { m: 1 },
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
       }}>
-        {/* <ButtonGroup aria-label="button group" > */}
-            {/* <Button 
-              color="success"
-              size='large' variant="contained" 
-              startIcon={<AutorenewIcon />} 
-              onClick={ nextUser }
-            >
-                Skip
-            </Button> */}
+
         <Fab size='small' color="inherit" aria-label="replay" sx={{ ...fabYellowStyle }} disabled>
           <ReplayIcon />
         </Fab>
@@ -145,7 +138,10 @@ const VChat = () => {
         </IconButton>
         {/* </ButtonGroup> */}
       </Box>
+    </Container>
 
+    <Container maxWidth="sm">
+      {/* other stats */}
       <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}
       </Box>
