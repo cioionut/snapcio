@@ -1,8 +1,9 @@
 import { useRef, useState, useCallback, useContext, useEffect } from 'react';
 
-import { Box, CircularProgress }  from '@mui/material';
+import { Box, CircularProgress, LinearProgress }  from '@mui/material';
 // local
 import { StreamsContext } from '../contexts/StreamsContext';
+import { WebRTCContext } from '../contexts/WebRTCContext';
 
 
 export default function OtherVideo() {
@@ -11,6 +12,10 @@ export default function OtherVideo() {
     remoteStream,
     setRemoteStream
   } = useContext(StreamsContext);
+
+  const {
+    availableUsers,
+  } = useContext(WebRTCContext);
 
   function gotStream(stream, muted=false) {
     const video = otherVideo.current;
@@ -23,26 +28,42 @@ export default function OtherVideo() {
     if (remoteStream) gotStream(remoteStream);
   }, [remoteStream]);
 
+  const loadingVideo = <Box sx={{
+    display: 'flex',
+    flexDirection: 'column',
+    height: { xs: 300, md: 500 },
+    // justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'gray',
+    // backgroundImage: 'url("/broken_stream.gif")',
+  }}>
+    {/* <CircularProgress /> */}
+    <Box sx={{ width: '100%' }}>
+      <LinearProgress />
+    </Box>
+    <Box sx={{ mt: 10 }}>
+      Available Users: {availableUsers.length}
+    </Box>
+  </Box>
+
   return (
     <>
-      {/* <Container> */}
-        <Box sx={{
+      {
+        !remoteStream
+        ? loadingVideo
+        : <Box sx={{
           display: 'flex',
           height: { xs: 300, md: 500 },
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: 'gray',
           // backgroundImage: 'url("/broken_stream.gif")',
-        }}
-        > 
-        {
-          !remoteStream
-          ? <CircularProgress />
-          : <video ref={otherVideo}/>
-        }
+        }}>
+          <video ref={otherVideo}/>
         </Box>
+      }
         
-      {/* </Container> */}
+        
 
       <style jsx>{`
         video {
