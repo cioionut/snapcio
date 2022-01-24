@@ -56,10 +56,8 @@ export default function OtherVideo() {
           height: { xs: 300, md: 500 },
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: 'gray',
-          // backgroundImage: 'url("/broken_stream.gif")',
         }}>
-          <video ref={otherVideo}/>
+          <video ref={otherVideo} controls/>
         </Box>
       }
         
