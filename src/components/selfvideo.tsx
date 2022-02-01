@@ -56,6 +56,8 @@ const handleGetUserMediaError = (error) => {
 export default function SelfVideo({ defaultMute=true, hFlip=false }) {
   const {
     hangUpCall,
+    joinConv,
+    stopConv,
     peerConnection
   } = useContext(WebRTCContext);
   const {
@@ -129,9 +131,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
       });
     };
 
+    // call join
+    joinConv();
+
     // Refresh button list in case labels have become available
     return navigator.mediaDevices.enumerateDevices();
-  }, [selfVideo, defaultMute, setLocalStream, peerConnection]);
+  }, [selfVideo, defaultMute, setLocalStream, peerConnection, joinConv]);
 
   const start = useCallback((vSelect=videoSelect, audioInSelect=audioInputSelect) => {
     // stop already running stream
@@ -175,8 +180,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
     selfVideo.current.srcObject = null;
     setLocalStream(null);
     // fix the hanhupcall
-    hangUpCall();
-  }, [localStream, setLocalStream, hangUpCall]);
+    stopConv();
+  }, [localStream, setLocalStream, stopConv]);
 
   const shouldShowdeviceSettings = (peerConnection && ['failed', 'closed'].includes(peerConnection.connectionState));
 

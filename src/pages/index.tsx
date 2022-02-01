@@ -140,8 +140,8 @@ const VChat = () => {
       </Box>
     </Container>
 
+    {/* other stats */}
     <Container maxWidth="sm">
-      {/* other stats */}
       <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}
       </Box>
@@ -152,7 +152,6 @@ const VChat = () => {
         Peer Socket Id: {targetUsername}
       </Box>
     </Container>
-      
     </>
   )
 }

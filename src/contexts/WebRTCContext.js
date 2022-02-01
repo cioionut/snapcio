@@ -19,6 +19,8 @@ const pcConfig = {
 export const WebRTCContext = createContext({
   nextUser: () => {},
   hangUpCall: () => {},
+  joinConv: () => {},
+  stopConv: () => {},
   availableUsers: [],
   myUsername: undefined,
   targetUsername: undefined,
@@ -153,12 +155,24 @@ export const WebRTCContextProvider = ({ children }) => {
     }
   }, [closeVideoCall, sendToServer, myUsername, targetUsername]);
 
+  // request a new peer
   const nextUser = useCallback(() => {
     hangUpCall();
     socket.emit('request-a-match', {
       name: myUsername,
     });
   }, [socket, myUsername, targetUsername, hangUpCall]);
+
+  const joinConv = useCallback(() => {
+    socket.emit('join', {
+      name: myUsername,
+    });
+  }, [socket, myUsername]);
+
+  const stopConv = useCallback(() => {
+    closeVideoCall();
+    socket.emit('stop');
+  }, [socket, closeVideoCall]);
 
   // Handles |icecandidate| events by forwarding the specified
   // ICE candidate (created by our local ICE agent) to the other
@@ -476,6 +490,8 @@ export const WebRTCContextProvider = ({ children }) => {
   return (
     <WebRTCContext.Provider value={{
       nextUser,
+      joinConv,
+      stopConv,
       hangUpCall,
       availableUsers,
       myUsername,
