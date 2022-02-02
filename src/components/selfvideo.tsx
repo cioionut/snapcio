@@ -9,6 +9,15 @@ import PhotoCameraFrontIcon from '@mui/icons-material/PhotoCameraFront';
 import StopIcon from '@mui/icons-material/Stop';
 import SettingsIcon from '@mui/icons-material/Settings';
 
+import * as blazeface from '@tensorflow-models/blazeface';
+import * as tf from '@tensorflow/tfjs-core';
+import * as tfjsWasm from '@tensorflow/tfjs-backend-wasm';
+// import '@tensorflow/tfjs-backend-webgl';
+// import '@tensorflow/tfjs-backend-cpu';
+
+tfjsWasm.setWasmPaths(
+  `https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm@${tfjsWasm.version_wasm}/dist/`);
+
 // local
 import { StreamsContext } from '../contexts/StreamsContext';
 import { WebRTCContext } from '../contexts/WebRTCContext';
@@ -52,10 +61,42 @@ const handleGetUserMediaError = (error) => {
   }
 }
 
+const drawPredictions = (predictions, ctx, canvasWidth, canvasHeight, returnTensors, annotateBoxes) => {
+  if (predictions.length > 0) {
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-export default function SelfVideo({ defaultMute=true, hFlip=false }) {
+    for (let i = 0; i < predictions.length; i++) {
+      if (returnTensors) {
+        predictions[i].topLeft = predictions[i].topLeft.arraySync();
+        predictions[i].bottomRight = predictions[i].bottomRight.arraySync();
+        if (annotateBoxes) {
+          predictions[i].landmarks = predictions[i].landmarks.arraySync();
+        }
+      }
+
+      const start = predictions[i].topLeft;
+      const end = predictions[i].bottomRight;
+      const size = [end[0] - start[0], end[1] - start[1]];
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+      ctx.fillRect(start[0], start[1], size[0], size[1]);
+
+      if (annotateBoxes) {
+        const landmarks = predictions[i].landmarks;
+
+        ctx.fillStyle = 'blue';
+        for (let j = 0; j < landmarks.length; j++) {
+          const x = landmarks[j][0];
+          const y = landmarks[j][1];
+          ctx.fillRect(x, y, 5, 5);
+        }
+      }
+    }
+  }
+}
+
+
+export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=false }) {
   const {
-    hangUpCall,
     joinConv,
     stopConv,
     peerConnection
@@ -66,6 +107,11 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
   } = useContext(StreamsContext);
 
   const selfVideo = useRef(null);
+  const canvasRef = useRef(null);
+  const videoWraperRef = useRef(null);
+
+  const [ tfBackend, setTfBackend ] = useState('wasm');
+  const [ predictFaceInterval, setPredictFaceInterval ] = useState(null);
 
   const [ showSettings, setShowSettings ] = useState(false);
   const [ devicePermission, setDevicePermission ] = useState(false);
@@ -79,6 +125,75 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
     <MenuItem value={deviceInfo.deviceId} key={deviceInfo.deviceId}>{deviceInfo.label}</MenuItem>);
   const videoOptions = videoSources.map(deviceInfo => 
     <MenuItem value={deviceInfo.deviceId} key={deviceInfo.deviceId}>{deviceInfo.label}</MenuItem>);
+
+  const predict = useCallback(async (model) => {
+    if (
+      typeof selfVideo.current !== "undefined" &&
+      selfVideo.current !== null &&
+      selfVideo.current.readyState === 4 &&
+
+      typeof canvasRef.current !== "undefined" &&
+      canvasRef.current !== null
+    ) {
+
+      // Get Video Properties
+      const video = selfVideo.current;
+      const videoWidth = selfVideo.current.videoWidth;
+      // const videoWidth = selfVideo.current.offsetWidth;
+      const videoHeight = selfVideo.current.videoHeight;
+      // const videoHeight = selfVideo.current.offsetHeight;
+
+      // Set video width
+      selfVideo.current.width = videoWidth;
+      selfVideo.current.height = videoHeight;
+
+      // Set canvas width
+      canvasRef.current.width = videoWidth;
+      canvasRef.current.height = videoHeight;
+
+      // Make Detections
+      const returnTensors = false;
+      const flipHorizontal = hFlip;
+      const annotateBoxes = true;
+
+      const predictions = await model.estimateFaces(
+        video, returnTensors, flipHorizontal, annotateBoxes);
+
+      console.log(predictions);
+      // Get canvas context
+      const ctx = canvasRef.current.getContext("2d");
+      requestAnimationFrame(() => {
+        // drawMesh(face, ctx)
+        drawPredictions(predictions, ctx, videoWidth, videoHeight, returnTensors, annotateBoxes)
+      });
+    }
+  }, [selfVideo, canvasRef]);
+
+  //  Load blazeface
+  const runFaceDetect = useCallback(async () => {
+    const model = await blazeface.load();
+    const intervalId = setInterval(() => {
+      console.log("Run predict")
+      predict(model);
+    }, 50);
+    setPredictFaceInterval(intervalId);
+  }, [predict]);
+
+  const tfSetup = useCallback(async () => {
+    await tf.setBackend(tfBackend);
+  }, [tfBackend]);
+
+  // Face detection
+  useEffect(() => {
+    if (faceDetect) {
+      tfSetup();
+      if (devicePermission && tf.ready()) {
+        runFaceDetect();
+      } else if (!devicePermission && predictFaceInterval) {
+        clearInterval(predictFaceInterval);
+      }
+    }
+  }, [tfSetup, runFaceDetect, devicePermission, faceDetect]);
 
 
   useEffect(() => {
@@ -144,16 +259,25 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
       localStream.getTracks().forEach(track => {
         track.stop();
       });
-    }
+    };
+
+    const videoWidth = videoWraperRef.current ? videoWraperRef.current.offsetWidth : undefined;
+    const videoHeight = videoWraperRef.current ? videoWraperRef.current.offsetHeight : undefined;
+
     const constraints = {
       audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined, echoCancellation: true },
-      video: {deviceId: vSelect ? {exact: vSelect} : undefined}
+      video: {
+        deviceId: vSelect ? {exact: vSelect} : undefined,
+        facingMode: 'user',
+        width: {  max: videoWidth },
+        height: { max: videoHeight },
+      }
     };
     navigator.mediaDevices.getUserMedia(constraints)
       .then(gotStream)
       .then(gotDevices)
       .catch(handleGetUserMediaError);
-  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices]);
+  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices, videoWraperRef]);
 
   const handleChangeVideo = useCallback(event => {
     setVideoSelect(event.target.value);
@@ -194,11 +318,15 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
         alignItems: 'center',
         backgroundColor: 'black'
       }}
+        ref={videoWraperRef}
       >
       {
         !devicePermission
         ? <CircularProgress />
-        : <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
+        : <div className='videoBox' style={{position: 'relative'}}>
+            <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
+            <canvas style={{position: 'absolute', top: 0, left: 0}} id="predictions" ref={canvasRef}/>
+          </div>
       }
       </Box>
       <Box sx={{ mt: 1 }}>
@@ -252,13 +380,25 @@ export default function SelfVideo({ defaultMute=true, hFlip=false }) {
 
       <style jsx>{`
         video {
-          max-width: 100%;
-          max-height: 100%;
+          // min-width: 100%; 
+          // min-height: 100%;
+          // width: auto; 
+          // height: auto; 
+          // z-index: -100;
+          // background-size: cover;
+          // overflow: hidden;
+
+          // width: auto;
+          // height: auto;
+          width: 100%;
+          height: 100%;
         }
         .video-hflip {
-            transform: rotateY(180deg);
-            -webkit-transform:rotateY(180deg); /* Safari and Chrome */
-            -moz-transform:rotateY(180deg); /* Firefox */
+            -webkit-transform: scaleX(-1);
+            transform: scaleX(-1);
+            // transform: rotateY(180deg);
+            // -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+            // -moz-transform:rotateY(180deg); /* Firefox */
         }
         .brokenvideo {
           background-image: url("/broken_stream.gif");

@@ -27,9 +27,9 @@ export default function Chat() {
             <title>Chat - Snapcio</title>
             <meta name="description" content="Chat free" />
           </Head>
-          <Container maxWidth="sm">
+          <Container maxWidth="md">
             <StreamsContextProvider>
-              <SelfVideo defaultMute={false} />
+              <SelfVideo defaultMute={false} faceDetect={true} />
             </StreamsContextProvider>
           </Container>
         </Layout>
