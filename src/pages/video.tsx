@@ -29,7 +29,7 @@ export default function Chat() {
           </Head>
           <Container maxWidth="md">
             <StreamsContextProvider>
-              <SelfVideo defaultMute={false} faceDetect={true} />
+              <SelfVideo defaultMute={false} faceDetect={true} stats={true} />
             </StreamsContextProvider>
           </Container>
         </Layout>

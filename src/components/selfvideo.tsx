@@ -33,10 +33,29 @@ const mediaConstraints = {
   audio: { echoCancellation: true },            // We want an audio track
   video: {
     aspectRatio: {
-      ideal: 1.333333     // 3:2 aspect is preferred
+      ideal: 1.333333     // 4:3 aspect is preferred
     }
   }
 };
+
+const vgaConstraints = {
+  width: 640, height: 480
+};
+
+
+const svgaConstraints = {
+  width: 800, height: 600
+};
+
+const pointSixNineM3Constraints = { // 0.69M3
+  width: 960, height: 720
+};
+
+const sxgaMinusConstraints = { // 720p - hd equivalent for 4:3
+  width: 1280, height: 960
+};
+
+
 
 // Handle errors which occur when trying to access the local media
 // hardware; that is, exceptions thrown by getUserMedia(). The two most
@@ -95,7 +114,7 @@ const drawPredictions = (predictions, ctx, canvasWidth, canvasHeight, returnTens
 }
 
 
-export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=false }) {
+export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=false, stats=false }) {
   const {
     joinConv,
     stopConv,
@@ -138,10 +157,49 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
       // Get Video Properties
       const video = selfVideo.current;
-      const videoWidth = selfVideo.current.videoWidth;
-      // const videoWidth = selfVideo.current.offsetWidth;
-      const videoHeight = selfVideo.current.videoHeight;
-      // const videoHeight = selfVideo.current.offsetHeight;
+      const videoWidth = selfVideo.current.width;
+      const videoHeight = selfVideo.current.height;
+
+      // Make Detections
+      const returnTensors = false;
+      const flipHorizontal = hFlip;
+      const annotateBoxes = true;
+
+      const tfVideo = tf.browser.fromPixels(video);
+      const vInput = tf.image.resizeBilinear(tfVideo, [videoHeight, videoWidth]);
+      const predictions = await model.estimateFaces(
+        vInput, returnTensors, flipHorizontal, annotateBoxes);
+      
+      tf.dispose(tfVideo);
+      tf.dispose(vInput);
+
+      // console.log(tf.memory());
+      console.log(predictions);
+      // Get canvas context
+      const ctx = canvasRef.current.getContext("2d");
+      requestAnimationFrame(() => {
+        drawPredictions(predictions, ctx, videoWidth, videoHeight, returnTensors, annotateBoxes)
+      });
+    }
+  }, [selfVideo, canvasRef]);
+
+  useEffect(() => {
+    // console.log('canvas setup', selfVideo.current, canvasRef.current);
+    if (devices && 
+      typeof selfVideo.current !== "undefined" &&
+      selfVideo.current !== null &&
+      // selfVideo.current.readyState === 4 &&
+
+      typeof canvasRef.current !== "undefined" &&
+      canvasRef.current !== null
+    ) {
+      console.log('canvas setup', selfVideo.current, canvasRef.current);
+
+      // Get Video Properties
+      const video = selfVideo.current;
+
+      const videoWidth = videoWraperRef.current ? videoWraperRef.current.scrollWidth : undefined;
+      const videoHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
 
       // Set video width
       selfVideo.current.width = videoWidth;
@@ -151,23 +209,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       canvasRef.current.width = videoWidth;
       canvasRef.current.height = videoHeight;
 
-      // Make Detections
-      const returnTensors = false;
-      const flipHorizontal = hFlip;
-      const annotateBoxes = true;
-
-      const predictions = await model.estimateFaces(
-        video, returnTensors, flipHorizontal, annotateBoxes);
-
-      console.log(predictions);
-      // Get canvas context
-      const ctx = canvasRef.current.getContext("2d");
-      requestAnimationFrame(() => {
-        // drawMesh(face, ctx)
-        drawPredictions(predictions, ctx, videoWidth, videoHeight, returnTensors, annotateBoxes)
-      });
     }
-  }, [selfVideo, canvasRef]);
+  }, [devices]);
 
   //  Load blazeface
   const runFaceDetect = useCallback(async () => {
@@ -177,23 +220,26 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       predict(model);
     }, 50);
     setPredictFaceInterval(intervalId);
-  }, [predict]);
+  }, [predict, setPredictFaceInterval]);
 
   const tfSetup = useCallback(async () => {
     await tf.setBackend(tfBackend);
   }, [tfBackend]);
 
+  useEffect(() => { tfSetup(); }, [tfSetup]);
+
   // Face detection
   useEffect(() => {
     if (faceDetect) {
-      tfSetup();
-      if (devicePermission && tf.ready()) {
+      if (devicePermission && tf.ready() && !predictFaceInterval) {
+        console.log('should start face detection');
         runFaceDetect();
       } else if (!devicePermission && predictFaceInterval) {
         clearInterval(predictFaceInterval);
+        setPredictFaceInterval(null);
       }
     }
-  }, [tfSetup, runFaceDetect, devicePermission, faceDetect]);
+  }, [tfSetup, runFaceDetect, devicePermission, faceDetect, predictFaceInterval]);
 
 
   useEffect(() => {
@@ -261,16 +307,27 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       });
     };
 
-    const videoWidth = videoWraperRef.current ? videoWraperRef.current.offsetWidth : undefined;
-    const videoHeight = videoWraperRef.current ? videoWraperRef.current.offsetHeight : undefined;
+    const videoWraperWidth = videoWraperRef.current ? videoWraperRef.current.scrollWidth : undefined;
+    const videoWraperHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
 
     const constraints = {
       audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined, echoCancellation: true },
       video: {
         deviceId: vSelect ? {exact: vSelect} : undefined,
         facingMode: 'user',
-        width: {  max: videoWidth },
-        height: { max: videoHeight },
+        aspectRatio: {
+          ideal: 1.333333     // 4:3 aspect is preferred
+        },
+        width: {
+          // ideal: svgaConstraints.width, 
+          max: sxgaMinusConstraints.width
+          // max: videoWraperWidth
+        },
+        height: { 
+          // ideal: svgaConstraints.height, 
+          max: sxgaMinusConstraints.height
+          // max: videoWraperHeight
+        },
       }
     };
     navigator.mediaDevices.getUserMedia(constraints)
@@ -323,10 +380,10 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {
         !devicePermission
         ? <CircularProgress />
-        : <div className='videoBox' style={{position: 'relative'}}>
+        : <>
             <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
-            <canvas style={{position: 'absolute', top: 0, left: 0}} id="predictions" ref={canvasRef}/>
-          </div>
+            <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
+          </>
       }
       </Box>
       <Box sx={{ mt: 1 }}>
@@ -375,6 +432,14 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
               { audioOptions }
             </Select>
           </FormControl>
+        </Box>
+      }
+
+      {/* show stats about camera */}
+      {
+        (stats && selfVideo.current) &&
+        <Box sx={{ minWidth: 120, my: 2 }}>
+          Current resolution (w:h): {selfVideo.current.videoWidth}x{selfVideo.current.videoHeight} 
         </Box>
       }
 
