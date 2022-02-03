@@ -319,12 +319,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
           ideal: 1.333333     // 4:3 aspect is preferred
         },
         width: {
-          // ideal: svgaConstraints.width, 
+          ideal: svgaConstraints.width, 
           max: sxgaMinusConstraints.width
           // max: videoWraperWidth
         },
         height: { 
-          // ideal: svgaConstraints.height, 
+          ideal: svgaConstraints.height,
           max: sxgaMinusConstraints.height
           // max: videoWraperHeight
         },
@@ -363,8 +363,6 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     // fix the hanhupcall
     stopConv();
   }, [localStream, setLocalStream, stopConv]);
-
-  const shouldShowdeviceSettings = (peerConnection && ['failed', 'closed'].includes(peerConnection.connectionState));
 
   return (
     <>
