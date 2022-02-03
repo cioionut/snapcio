@@ -88,7 +88,7 @@ const VChat = () => {
 
   return (
     <>
-    <Container maxWidth="xl" sx={{ px: { xs: 0 } }}>
+    <Container maxWidth={false} sx={{ px: { xs: 0 } }}>
       {/* small screens */}
       <Box sx={{ display: { md: 'none' } }}>
         <Box sx={{ mt: 0 }}>

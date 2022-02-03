@@ -31,7 +31,7 @@ export default function OtherVideo() {
   const loadingVideo = <Box sx={{
     display: 'flex',
     flexDirection: 'column',
-    height: { xs: 300, md: 500 },
+    height: { xs: 300, md: 720 },
     // justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'gray',
@@ -53,7 +53,7 @@ export default function OtherVideo() {
         ? loadingVideo
         : <Box sx={{
           display: 'flex',
-          height: { xs: 300, md: 500 },
+          height: { xs: 300, md: 720 },
           justifyContent: 'center',
           alignItems: 'center',
         }}>

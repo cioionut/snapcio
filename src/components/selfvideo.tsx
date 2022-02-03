@@ -305,7 +305,10 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     // const videoWraperHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
 
     const constraints = {
-      audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined, echoCancellation: true },
+      audio: {
+        deviceId: audioInSelect ? {exact: audioInSelect} : undefined, 
+        echoCancellation: true
+      },
       video: {
         deviceId: vSelect ? {exact: vSelect} : undefined,
         facingMode: 'user',
@@ -362,7 +365,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     <>
       <Box sx={{
         display: 'flex',
-        height: { xs: 300, md: 500 },
+        height: { xs: 300, md: 720 },
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'black'
