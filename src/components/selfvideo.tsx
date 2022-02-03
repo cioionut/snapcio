@@ -162,8 +162,16 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
       // Get Video Properties
       const video = selfVideo.current;
-      const videoWidth = selfVideo.current.width;
-      const videoHeight = selfVideo.current.height;
+      const videoWidth = videoWraperRef.current ? videoWraperRef.current.scrollWidth : undefined;
+      const videoHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
+
+      // Set video width
+      selfVideo.current.width = videoWidth;
+      selfVideo.current.height = videoHeight;
+
+      // Set canvas width
+      canvasRef.current.width = videoWidth;
+      canvasRef.current.height = videoHeight;
 
       // Make Detections
       const returnTensors = false;
@@ -187,36 +195,6 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       });
     }
   }, [selfVideo, canvasRef]);
-
-  // canvas setup
-  useEffect(() => {
-    // console.log('canvas setup', selfVideo.current, canvasRef.current);
-    if (devices && 
-      typeof selfVideo.current !== "undefined" &&
-      selfVideo.current !== null &&
-      // selfVideo.current.readyState === 4 &&
-
-      typeof canvasRef.current !== "undefined" &&
-      canvasRef.current !== null
-    ) {
-      console.log('canvas setup', selfVideo.current, canvasRef.current);
-
-      // Get Video Properties
-      const video = selfVideo.current;
-
-      const videoWidth = videoWraperRef.current ? videoWraperRef.current.scrollWidth : undefined;
-      const videoHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
-
-      // Set video width
-      selfVideo.current.width = videoWidth;
-      selfVideo.current.height = videoHeight;
-
-      // Set canvas width
-      canvasRef.current.width = videoWidth;
-      canvasRef.current.height = videoHeight;
-
-    }
-  }, [devices]);
 
   //  Load blazeface
   const runFaceDetect = useCallback(async () => {
@@ -247,7 +225,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     }
   }, [tfSetup, runFaceDetect, devicePermission, faceDetect, predictFaceInterval]);
 
-
+  // set selected video source 
   useEffect(() => {
     if (localStream && videoSources.length > 0) {
       const videoTracks = localStream.getVideoTracks();
@@ -314,6 +292,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     return navigator.mediaDevices.enumerateDevices();
   }, [selfVideo, defaultMute, setLocalStream, peerConnection, joinConv]);
 
+  // getUserMedia
   const start = useCallback((vSelect=videoSelect, audioInSelect=audioInputSelect) => {
     // stop already running stream
     if (localStream) {
@@ -393,10 +372,11 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {
         !devicePermission
         ? <CircularProgress />
-        : <>
-            <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
-            <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
-          </>
+        :         
+        <>
+          <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
+          <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
+        </>
       }
       </Box>
       <Box sx={{ mt: 1 }}>
@@ -416,7 +396,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {
         (showSettings && videoSelect != '') &&
         <Box sx={{ my: 2 }}>
-          <FormControl>
+          <FormControl fullWidth>
             <InputLabel id="select-camera-source-label">Camera source</InputLabel>
             <Select
               labelId="select-camera-source-label"
@@ -433,7 +413,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {
         (showSettings && audioInputSelect != '') &&
         <Box sx={{ my: 2 }}>
-          <FormControl>
+          <FormControl fullWidth>
             <InputLabel id="select-audio-source-label">Audio source</InputLabel>
             <Select
               labelId="select-audio-source-label"
@@ -453,9 +433,9 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         (stats && selfVideo.current) &&
         <Box sx={{ my: 2 }}>
           Current resolution (w:h): {selfVideo.current.videoWidth}x{selfVideo.current.videoHeight}
-          <p>
+          {/* <p>
             Device Capabilities: { selectedVideoSrc && JSON.stringify(selectedVideoSrc.getCapabilities(), null, 2) }
-          </p>
+          </p> */}
         </Box>
       }
 
