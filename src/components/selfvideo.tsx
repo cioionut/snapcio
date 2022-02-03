@@ -1,3 +1,4 @@
+import adapter from 'webrtc-adapter';
 // nextjs
 import dynamic from 'next/dynamic';
 // react
@@ -9,6 +10,7 @@ import PhotoCameraFrontIcon from '@mui/icons-material/PhotoCameraFront';
 import StopIcon from '@mui/icons-material/Stop';
 import SettingsIcon from '@mui/icons-material/Settings';
 
+// tf
 import * as blazeface from '@tensorflow-models/blazeface';
 import * as tf from '@tensorflow/tfjs-core';
 import * as tfjsWasm from '@tensorflow/tfjs-backend-wasm';
@@ -137,6 +139,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
   const [ devices, setDevices ] = useState([]);
   const [ audioInputSelect, setAudioInputSelect ] = useState('');
   const [ videoSelect, setVideoSelect ] = useState('');
+  const [ selectedVideoSrc, setSelectedVideoSrc ] = useState(null);
+
   
   const [ audioSources, setAudioSources ] = useState([]);
   const [ videoSources, setVideoSources ] = useState([]);
@@ -145,6 +149,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
   const videoOptions = videoSources.map(deviceInfo => 
     <MenuItem value={deviceInfo.deviceId} key={deviceInfo.deviceId}>{deviceInfo.label}</MenuItem>);
 
+  // predict face bbox
   const predict = useCallback(async (model) => {
     if (
       typeof selfVideo.current !== "undefined" &&
@@ -174,7 +179,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       tf.dispose(vInput);
 
       // console.log(tf.memory());
-      console.log(predictions);
+      // console.log(predictions);
       // Get canvas context
       const ctx = canvasRef.current.getContext("2d");
       requestAnimationFrame(() => {
@@ -183,6 +188,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     }
   }, [selfVideo, canvasRef]);
 
+  // canvas setup
   useEffect(() => {
     // console.log('canvas setup', selfVideo.current, canvasRef.current);
     if (devices && 
@@ -216,7 +222,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
   const runFaceDetect = useCallback(async () => {
     const model = await blazeface.load();
     const intervalId = setInterval(() => {
-      console.log("Run predict")
+      // console.log("Run predict");
       predict(model);
     }, 50);
     setPredictFaceInterval(intervalId);
@@ -248,6 +254,15 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       const currentTrack = videoTracks ? videoTracks[0] : undefined;
       const mediaSrc = videoSources.find(mediaSrc => mediaSrc.label === currentTrack.label);
       setVideoSelect(mediaSrc.deviceId);
+      setSelectedVideoSrc(mediaSrc);
+
+      // check for rear camera
+      const selectedVSrcCap = mediaSrc.getCapabilities();
+      if (selectedVSrcCap?.facingMode.length > 0) {
+        if (selectedVSrcCap?.facingMode === 'environment') {
+          hFlip = false;
+        }
+      }
     }
   }, [videoSources, localStream]);
 
@@ -282,7 +297,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
     function _replaceTracksForPeer(peer) {
       peer.getSenders().map(function(sender) {
-        console.log(sender.track)
+        // console.log(sender.track);
         if (sender.track) {
           const tracksToReplace = newStream.getTracks().find(track => {
             return track.kind === sender.track.kind;
@@ -307,8 +322,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       });
     };
 
-    const videoWraperWidth = videoWraperRef.current ? videoWraperRef.current.scrollWidth : undefined;
-    const videoWraperHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
+    // const videoWraperWidth = videoWraperRef.current ? videoWraperRef.current.scrollWidth : undefined;
+    // const videoWraperHeight = videoWraperRef.current ? videoWraperRef.current.scrollHeight : undefined;
 
     const constraints = {
       audio: {deviceId: audioInSelect ? {exact: audioInSelect} : undefined, echoCancellation: true },
@@ -400,8 +415,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       
       {
         (showSettings && videoSelect != '') &&
-        <Box sx={{ minWidth: 120, my: 2 }}>
-          <FormControl fullWidth>
+        <Box sx={{ my: 2 }}>
+          <FormControl>
             <InputLabel id="select-camera-source-label">Camera source</InputLabel>
             <Select
               labelId="select-camera-source-label"
@@ -417,8 +432,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       }
       {
         (showSettings && audioInputSelect != '') &&
-        <Box sx={{ minWidth: 120, my: 2 }}>
-          <FormControl fullWidth>
+        <Box sx={{ my: 2 }}>
+          <FormControl>
             <InputLabel id="select-audio-source-label">Audio source</InputLabel>
             <Select
               labelId="select-audio-source-label"
@@ -436,8 +451,11 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {/* show stats about camera */}
       {
         (stats && selfVideo.current) &&
-        <Box sx={{ minWidth: 120, my: 2 }}>
-          Current resolution (w:h): {selfVideo.current.videoWidth}x{selfVideo.current.videoHeight} 
+        <Box sx={{ my: 2 }}>
+          Current resolution (w:h): {selfVideo.current.videoWidth}x{selfVideo.current.videoHeight}
+          <p>
+            Device Capabilities: { selectedVideoSrc && JSON.stringify(selectedVideoSrc.getCapabilities(), null, 2) }
+          </p>
         </Box>
       }
 

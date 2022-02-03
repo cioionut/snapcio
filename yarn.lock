@@ -3033,10 +3033,10 @@
   "resolved" "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-3.0.1.tgz"
   "version" "3.0.1"
 
-"webrtc-adapter@^8.1.0":
-  "integrity" "sha512-I+y/LWBiGYPVhIb8Ww7nyoNWhrCYENeGoRvZuyytLn/h+ahDBgItvuIfMdzT+xhOnjLIMVkOykttGJPv1dr6kA=="
-  "resolved" "https://registry.npmjs.org/webrtc-adapter/-/webrtc-adapter-8.1.0.tgz"
-  "version" "8.1.0"
+"webrtc-adapter@^8.1.1":
+  "integrity" "sha512-1yXevP7TeZGmklEXkvQVrZp3fOSJlLeXNGCA7NovQokxgP3/e2T3EVGL0eKU87S9vKppWjvRWqnJeSANEspOBg=="
+  "resolved" "https://registry.npmjs.org/webrtc-adapter/-/webrtc-adapter-8.1.1.tgz"
+  "version" "8.1.1"
   dependencies:
     "sdp" "^3.0.2"
 

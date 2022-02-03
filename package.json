@@ -32,7 +32,7 @@
     "socket.io-client": "^4.4.0",
     "swr": "^1.0.1",
     "uuid": "^8.3.2",
-    "webrtc-adapter": "^8.1.0"
+    "webrtc-adapter": "^8.1.1"
   },
   "devDependencies": {
     "@types/react": "^17.0.37",
