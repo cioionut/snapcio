@@ -126,6 +126,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     setLocalStream
   } = useContext(StreamsContext);
 
+  const flipHorizontal = useRef(hFlip);
   const selfVideo = useRef(null);
   const canvasRef = useRef(null);
   const videoWraperRef = useRef(null);
@@ -174,13 +175,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
       // Make Detections
       const returnTensors = false;
-      const flipHorizontal = hFlip;
       const annotateBoxes = true;
 
       const tfVideo = tf.browser.fromPixels(video);
       const vInput = tf.image.resizeBilinear(tfVideo, [videoHeight, videoWidth]);
       const predictions = await model.estimateFaces(
-        vInput, returnTensors, flipHorizontal, annotateBoxes);
+        vInput, returnTensors, flipHorizontal.current, annotateBoxes);
       
       tf.dispose(tfVideo);
       tf.dispose(vInput);
@@ -237,7 +237,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       const selectedVSrcCap = mediaSrc.getCapabilities();
       if (selectedVSrcCap?.facingMode.length > 0) {
         if (selectedVSrcCap?.facingMode === 'environment') {
-          hFlip = false;
+          flipHorizontal.current = false;
         }
       }
     }
@@ -330,7 +330,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       .then(gotStream)
       .then(gotDevices)
       .catch(handleGetUserMediaError);
-  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices, videoWraperRef]);
+  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices]);
 
   const handleChangeVideo = useCallback(event => {
     setVideoSelect(event.target.value);
@@ -376,7 +376,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         ? <CircularProgress />
         :         
         <>
-          <video className={hFlip ? 'video-hflip' : ''} ref={selfVideo}/>
+          <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
         </>
       }
