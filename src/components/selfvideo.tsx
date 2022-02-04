@@ -44,7 +44,6 @@ const vgaConstraints = {
   width: 640, height: 480
 };
 
-
 const svgaConstraints = {
   width: 800, height: 600
 };
@@ -316,12 +315,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
           ideal: 1.333333     // 4:3 aspect is preferred
         },
         width: {
-          ideal: svgaConstraints.width, 
+          ideal: pointSixNineM3Constraints.width, 
           max: sxgaMinusConstraints.width
           // max: videoWraperWidth
         },
         height: { 
-          ideal: svgaConstraints.height,
+          ideal: pointSixNineM3Constraints.height,
           max: sxgaMinusConstraints.height
           // max: videoWraperHeight
         },
