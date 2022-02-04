@@ -367,7 +367,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         height: { xs: 300, md: 720 },
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'black'
+        backgroundColor: !devicePermission ? 'black' : 'transparent'
       }}
         ref={videoWraperRef}
       >
@@ -389,7 +389,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         }
         {
           devicePermission &&
-          <IconButton aria-label="settings" onClick={() => {setShowSettings(!showSettings && devicePermission)}} >
+          <IconButton sx={{ mx: 3 }} aria-label="settings" onClick={() => {setShowSettings(!showSettings && devicePermission)}} >
             <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
           </IconButton>
         }

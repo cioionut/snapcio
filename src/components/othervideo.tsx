@@ -65,8 +65,8 @@ export default function OtherVideo() {
 
       <style jsx>{`
         video {
-          max-width: 100%;
-          max-height: 100%;
+          width: 100%;
+          height: 100%;
         }
         .video-hflip {
             transform: rotateY(180deg);
