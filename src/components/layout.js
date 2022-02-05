@@ -21,6 +21,7 @@ import BottomBar from './global/BottomNav';
 
 // local styles
 import styles from '../styles/layout.module.css';
+import { Grid } from '@mui/material';
 
 export const siteName = 'Ionkom Chat';
 
@@ -74,20 +75,18 @@ export default function Layout ({ children }) {
       </main>
 
       <BottomBar/>
-      {/* <footer className={styles.footer}>
-        <Container fluid>
-            <Row>
-              <Col xs='auto'>
-                <Link href="https://ionkom.com/about"><a className={styles.footerLink} target="_blank" rel="noopener">{ t('footer:aboutPageTitle') }</a></Link>
-              </Col>
-              <Col xs='auto'>
-                <Link href='https://ionkom.com/policies/privacy'><a className={styles.footerLink} target="_blank" rel="noopener">{ t('footer:privacyPolicyPageTitle') }</a></Link>
-              </Col>
-              <Col xs='auto'>
-                <Link href='https://ionkom.com/policies/terms'><a className={styles.footerLink} target="_blank" rel="noopener">{ t('footer:termsPageTitle') }</a></Link>
-              </Col>
-            </Row>
-        </Container>
+      {/* <footer >
+      <Grid container sx={{ mb: 10 }} justifyContent="center" alignItems="center">
+        <Grid item xs={4}>
+          <Link href="https://ionkom.com/about"><a className={styles.footerLink} target="_blank" rel="noopener">{ t('footer:aboutPageTitle') }</a></Link>
+        </Grid>
+        <Grid item xs={4}>
+          <Link href='https://ionkom.com/policies/privacy'><a className={styles.footerLink} target="_blank" rel="noopener">{ t('footer:privacyPolicyPageTitle') }</a></Link>
+        </Grid>
+        <Grid item xs={4}>
+          <Link href='https://ionkom.com/policies/terms'><a className={styles.footerLink} target="_blank" rel="noopener">{ t('footer:termsPageTitle') }</a></Link>
+        </Grid>
+      </Grid>
       </footer> */}
     </>
   )

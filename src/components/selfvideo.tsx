@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 // react
 import { useContext, MouseEvent, useRef, useState, useEffect, useCallback } from 'react';
 // material-ui
-import { Box, InputLabel, MenuItem, FormControl, Select, Button, Container, CircularProgress, CardMedia, Card, IconButton }  from '@mui/material';
+import { Box, InputLabel, MenuItem, FormControl, Select, Button, CircularProgress, LinearProgress, IconButton }  from '@mui/material';
 // import { MicIcon }  from '@mui/icons-material';
 import PhotoCameraFrontIcon from '@mui/icons-material/PhotoCameraFront';
 import StopIcon from '@mui/icons-material/Stop';
@@ -136,6 +136,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
   const [ showSettings, setShowSettings ] = useState(false);
   const [ devicePermission, setDevicePermission ] = useState(false);
+  const [ devicePermissionRequest, setdevicePermissionRequest ] = useState(false);
   const [ devices, setDevices ] = useState([]);
   const [ audioInputSelect, setAudioInputSelect ] = useState('');
   const [ videoSelect, setVideoSelect ] = useState('');
@@ -203,6 +204,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       predict(model);
     }, 50);
     setPredictFaceInterval(intervalId);
+
+    return () => clearInterval(intervalId);
   }, [predict, setPredictFaceInterval]);
 
   const tfSetup = useCallback(async () => {
@@ -329,8 +332,11 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     navigator.mediaDevices.getUserMedia(constraints)
       .then(gotStream)
       .then(gotDevices)
-      .catch(handleGetUserMediaError);
-  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices]);
+      .catch((err) => { 
+        setDevicePermission(false); 
+        handleGetUserMediaError(err);
+      });
+  }, [localStream, audioInputSelect, videoSelect, gotStream, gotDevices, setDevicePermission]);
 
   const handleChangeVideo = useCallback(event => {
     setVideoSelect(event.target.value);
@@ -344,7 +350,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
   const handleStartDevice = useCallback((event=null) => {
     start();
-  }, [start]);
+    setDevicePermission(undefined);
+  }, [start, setDevicePermission]);
 
   const handleStopDevice = useCallback((event=null) => {
     setDevicePermission(false);
@@ -363,6 +370,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
   return (
     <>
       <Box sx={{
+        mx: { md: 1 },
         display: 'flex',
         height: { xs: 300, md: 720 },
         justifyContent: 'center',
@@ -372,9 +380,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         ref={videoWraperRef}
       >
       {
-        !devicePermission
-        ? <CircularProgress />
-        :         
+        !devicePermission && devicePermission !== undefined
+        ? <Button variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}>GO LIVE</Button> 
+        : (devicePermission === undefined) && <CircularProgress/>
+      }
+      {
+        devicePermission &&
         <>
           <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
@@ -383,16 +394,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       </Box>
       <Box sx={{ mt: 1 }}>
         { 
-          !devicePermission 
-          ? <Button variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}>GO LIVE</Button> 
-          : <Button variant="outlined" color="error" onClick={handleStopDevice} startIcon={<StopIcon />}>Stop Live</Button>
-        }
-        {
           devicePermission &&
-          <IconButton sx={{ mx: 3 }} aria-label="settings" onClick={() => {setShowSettings(!showSettings && devicePermission)}} >
-            <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
-          </IconButton>
+          <Button variant="outlined" color="error" onClick={handleStopDevice} startIcon={<StopIcon />}>Stop Live</Button>
         }
+        <IconButton sx={{ mx: 3 }} aria-label="settings" onClick={() => {setShowSettings(!showSettings)}} >
+          <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
+        </IconButton>
       </Box>
       
       {

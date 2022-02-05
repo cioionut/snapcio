@@ -49,11 +49,18 @@ function MyApp(props) {
       },
   }), [setCookie]);
 
+  // todo: fix dark mode: https://mui.com/customization/dark-mode/
   const theme = React.useMemo(
     () =>
       createTheme({
         palette: {
           mode,
+          primary: {
+            main: '#00203FFF',
+          },
+          secondary: {
+            main: '#ADEFD1FF',
+          },
         },
       }),
     [mode],

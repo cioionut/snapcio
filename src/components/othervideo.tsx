@@ -1,10 +1,17 @@
 import { useRef, useState, useCallback, useContext, useEffect } from 'react';
 
-import { Box, CircularProgress, LinearProgress }  from '@mui/material';
+import { Box, CircularProgress, LinearProgress, Alert, AlertTitle }  from '@mui/material';
+import { green, yellow, red } from '@mui/material/colors';
+
 // local
 import { StreamsContext } from '../contexts/StreamsContext';
 import { WebRTCContext } from '../contexts/WebRTCContext';
 
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min) + min); //The maximum is exclusive and the minimum is inclusive
+}
 
 export default function OtherVideo() {
   const otherVideo = useRef(null);
@@ -17,6 +24,8 @@ export default function OtherVideo() {
     availableUsers,
   } = useContext(WebRTCContext);
 
+  const [ fakeAvailableUsers, setFakeAvailableUsers ] = useState(700);
+
   function gotStream(stream, muted=false) {
     const video = otherVideo.current;
     video.srcObject = stream;
@@ -28,22 +37,34 @@ export default function OtherVideo() {
     if (remoteStream) gotStream(remoteStream);
   }, [remoteStream]);
 
+  useEffect(() => {
+    setFakeAvailableUsers(availableUsers.length * 1000 + fakeAvailableUsers + getRandomInt(-15, 15));
+    const interval = setInterval(() => {
+      setFakeAvailableUsers(availableUsers.length * 1000 + fakeAvailableUsers + getRandomInt(-15, 15));
+    }, 20*1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const loadingVideo = <Box sx={{
+    mx: { md: 1 },
     display: 'flex',
     flexDirection: 'column',
     height: { xs: 300, md: 720 },
     // justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'gray',
+    backgroundColor: '#606060FF',
     // backgroundImage: 'url("/broken_stream.gif")',
   }}>
     {/* <CircularProgress /> */}
     <Box sx={{ width: '100%' }}>
       <LinearProgress />
     </Box>
-    <Box sx={{ mt: 10 }}>
-      Available Users: {availableUsers.length}
-    </Box>
+    {
+      fakeAvailableUsers !== 700 && 
+      <Box sx={{ mt: 10, color: '#D6ED17FF'}}>
+        Available Users: {fakeAvailableUsers}
+      </Box>
+    }
   </Box>
 
   return (

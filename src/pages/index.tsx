@@ -86,9 +86,11 @@ const VChat = () => {
     localStream,
   } = useContext(StreamsContext);
 
+  const isDevelopment = useRef(process.env.NEXT_PUBLIC_ENV !== 'production')
+
   return (
     <>
-    <Container maxWidth={false} sx={{ px: { xs: 0 } }}>
+    <Container maxWidth={false} sx={{ px: { xs: 0 }, mb: { xs: 20 } }}>
       {/* small screens */}
       <Box sx={{ display: { md: 'none' } }}>
         <Box sx={{ mt: 0 }}>
@@ -112,35 +114,37 @@ const VChat = () => {
       </Box>
     </Container>
 
-
-
-    <Container maxWidth="sm" sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, mb: 8 }}>
-      {/* control buttons */}
-      <Box sx={{ 
+    <Container sx={{ 
+        position: 'fixed',
+        bottom: 0, 
+        left: 0, 
+        right: 0, 
+        mb: 8,
         '& > :not(style)': { m: 1 },
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-      }}>
-
-        <Fab size='small' color="inherit" aria-label="replay" sx={{ ...fabYellowStyle }} disabled>
-          <ReplayIcon />
-        </Fab>
-        <Fab aria-label="skipnext" sx={{ ...fabGreenStyle }} onClick={ nextUser } disabled={ !localStream }>
-          <AutorenewIcon fontSize='large'/>
-          {/* <CachedIcon sx={{ width: 35, height: 35}} /> */}
-        </Fab>
-        {/* <Fab size='small' aria-label="fav" >
-          <FavoriteBorderIcon />
-        </Fab> */}
-        <IconButton aria-label="fav">
-          <FavoriteBorderIcon />
-        </IconButton>
-        {/* </ButtonGroup> */}
-      </Box>
+      }}
+    >
+      {/* control buttons */}
+      <Fab size='small' color="inherit" aria-label="replay" sx={{ ...fabYellowStyle }} disabled>
+        <ReplayIcon />
+      </Fab>
+      <Fab aria-label="skipnext" sx={{ ...fabGreenStyle }} onClick={ nextUser } disabled={ !localStream }>
+        <AutorenewIcon fontSize='large'/>
+        {/* <CachedIcon sx={{ width: 35, height: 35}} /> */}
+      </Fab>
+      {/* <Fab size='small' aria-label="fav" >
+        <FavoriteBorderIcon />
+      </Fab> */}
+      <IconButton aria-label="fav">
+        <FavoriteBorderIcon />
+      </IconButton>
+      {/* </ButtonGroup> */}
     </Container>
 
     {/* other stats */}
+    { isDevelopment.current &&
     <Container maxWidth="sm">
       <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}
@@ -151,7 +155,7 @@ const VChat = () => {
       <Box sx={{ mb: 10 }}>
         Peer Socket Id: {targetUsername}
       </Box>
-    </Container>
+    </Container>}
     </>
   )
 }
