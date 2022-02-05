@@ -1,7 +1,6 @@
 import { useRef, useState, useCallback, useContext, useEffect } from 'react';
 
 import { Box, CircularProgress, LinearProgress, Alert, AlertTitle }  from '@mui/material';
-import { green, yellow, red } from '@mui/material/colors';
 
 // local
 import { StreamsContext } from '../contexts/StreamsContext';
@@ -37,12 +36,16 @@ export default function OtherVideo() {
     if (remoteStream) gotStream(remoteStream);
   }, [remoteStream]);
 
+
   useEffect(() => {
-    setFakeAvailableUsers(availableUsers.length * 1000 + fakeAvailableUsers + getRandomInt(-15, 15));
     const interval = setInterval(() => {
-      setFakeAvailableUsers(availableUsers.length * 1000 + fakeAvailableUsers + getRandomInt(-15, 15));
+      setFakeAvailableUsers((avUsrs) => avUsrs + getRandomInt(-15, 15));
     }, 20*1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    setFakeAvailableUsers(700 + getRandomInt(-15, 15));
   }, []);
 
   const loadingVideo = <Box sx={{
@@ -62,7 +65,7 @@ export default function OtherVideo() {
     {
       fakeAvailableUsers !== 700 && 
       <Box sx={{ mt: 10, color: '#D6ED17FF'}}>
-        Available Users: {fakeAvailableUsers}
+        Available Users: {availableUsers.length * 1000 + fakeAvailableUsers}
       </Box>
     }
   </Box>
