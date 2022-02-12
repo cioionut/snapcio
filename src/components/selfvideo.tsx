@@ -387,7 +387,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {
         devicePermission &&
         <>
-          <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
+          <video className={flipHorizontal.current ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
         </>
       }
