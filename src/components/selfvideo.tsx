@@ -383,15 +383,29 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       >
       {
         !devicePermission && devicePermission !== undefined
-        ? <Button variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}>GO LIVE</Button> 
+        ? <Button 
+            variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}
+          >
+            GO LIVE
+          </Button> 
         : (devicePermission === undefined) && <CircularProgress/>
       }
       {
         devicePermission &&
-        <>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: { xs: 300, md: 720 },
+
+          // clip video
+          position: 'relative',
+          zIndex: -100,
+          overflow: 'hidden'
+        }}>
           <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
-        </>
+        </Box>
       }
       </Box>
       <Box sx={{ mt: 1 }}>
@@ -463,7 +477,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
           // width: auto;
           // height: auto;
           width: 100%;
-          height: 100%;
+          height: auto;
         }
         .video-hflip {
             -webkit-transform: scaleX(-1);
