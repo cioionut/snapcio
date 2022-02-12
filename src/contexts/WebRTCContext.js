@@ -1,4 +1,5 @@
-import { createContext, useState, useEffect, useContext, useCallback } from 'react';
+import { Description } from '@mui/icons-material';
+import { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import io from 'socket.io-client';
 
 import { StreamsContext } from '../contexts/StreamsContext';
@@ -68,6 +69,8 @@ function reportError(errMessage) {
 
 export const WebRTCContextProvider = ({ children }) => {
   // source https://github.com/mdn/samples-server/blob/master/s/webrtc-from-chat/chatclient.js
+  // refactor to perfect negociation: https://w3c.github.io/webrtc-pc/#perfect-negotiation-example
+  // https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Perfect_negotiation
 
   const socket = useSocket();
 
@@ -79,6 +82,9 @@ export const WebRTCContextProvider = ({ children }) => {
   } = useContext(StreamsContext);
 
   const [ myPeerConnection, setMyPeerConnection ] = useState(null);    // RTCPeerConnection
+  const makingOffer = useRef(false);
+  const ignoreOffer = useRef(false);
+  const isSettingRemoteAnswerPending = useRef(false);
 
   // users
   const [ availableUsers, setAvailableUsers ] = useState([]);
@@ -163,17 +169,6 @@ export const WebRTCContextProvider = ({ children }) => {
     });
   }, [socket, myUsername, targetUsername, hangUpCall]);
 
-  const joinConv = useCallback(() => {
-    socket.emit('join', {
-      name: myUsername,
-    });
-  }, [socket, myUsername]);
-
-  const stopConv = useCallback(() => {
-    closeVideoCall();
-    socket.emit('stop');
-  }, [socket, closeVideoCall]);
-
   // Handles |icecandidate| events by forwarding the specified
   // ICE candidate (created by our local ICE agent) to the other
   // peer through the signaling server.
@@ -237,20 +232,11 @@ export const WebRTCContextProvider = ({ children }) => {
   const handleNegotiationNeededEvent = useCallback(async function () {
     log("*** Negotiation needed");
     try {
-      log("---> Creating offer");
-      const offer = await myPeerConnection.createOffer();
-
-      // If the connection hasn't yet achieved the "stable" state,
-      // return to the caller. Another negotiationneeded event
-      // will be fired when the state stabilizes.
-      if (myPeerConnection.signalingState != "stable") {
-        log("     -- The connection isn't stable yet; postponing...")
-        return;
-      }
-
       // Establish the offer as the local peer's current description.
       log("---> Setting local description to the offer");
-      await myPeerConnection.setLocalDescription(offer);
+      // perfect neg
+      makingOffer.current = true;
+      await myPeerConnection.setLocalDescription();
 
       // Send the offer to the remote peer.
       log("---> Sending the offer to the remote peer");
@@ -263,7 +249,9 @@ export const WebRTCContextProvider = ({ children }) => {
     } catch(err) {
       log("*** The following error occurred while handling the negotiationneeded event:");
       reportError(err);
-    };
+    } finally {
+      makingOffer.current = false;
+    }
   }, [myPeerConnection, myUsername, targetUsername, sendToServer]); // depends on socketio and needs myusername and targetusername
 
   // Called by the WebRTC layer when events occur on the media tracks
@@ -321,23 +309,23 @@ export const WebRTCContextProvider = ({ children }) => {
     if (myPeerConnection) {
       alert("You can't start a call because you already have one open!");
     } else {
-      const clickedUsername = userId;
+      const targetPeer = userId;
 
       // Don't allow users to call themselves, because weird.
-      if (clickedUsername === myUsername) {
+      if (targetPeer === myUsername) {
         alert("I'm afraid I can't let you talk to yourself. That would be weird.");
         return;
       }
 
       // Record the username being called for future reference
-      setTargetUsername(clickedUsername);
-      log("Inviting user " + clickedUsername);
+      setTargetUsername(targetPeer);
+      log("Inviting user " + targetPeer);
 
       // Call createPeerConnection() to create the RTCPeerConnection.
       // When this returns, myPeerConnection is our RTCPeerConnection
       // and webcamStream is a stream coming from the camera. They are
       // not linked together in any way yet.
-      log("Setting up connection to invite user: " + clickedUsername);
+      log("Setting /up connection to invite user: " + targetPeer);
       const mpc = await createPeerConnection();
 
       // Add the camera stream to the RTCPeerConnection
@@ -382,66 +370,55 @@ export const WebRTCContextProvider = ({ children }) => {
     // create our RTCPeerConnection, get and attach our local camera
     // stream, then create and send an answer to the caller.
     async function handleVideoOfferMsg(msg) {
+      // read from signaling message
       const targetUser = msg.name;
-      // set for future reference
+      const description = new RTCSessionDescription(msg.sdp);
+      const polite = myUsername < targetUser;
+      log("Received video chat offer from " + targetUser + "(polite: " + polite);
+
+      // set target peer
       setTargetUsername(targetUser);
-      let mpc = myPeerConnection;
 
       // If we're not already connected, create an RTCPeerConnection
       // to be linked to the caller.
-      log("Received video chat offer from " + targetUser);
+      let mpc = myPeerConnection;
       if (!myPeerConnection) {
         mpc = await createPeerConnection();
+        // Just Add the camera stream to the RTCPeerConnection
+        if (localStream) {
+          log("Add the local camera stream to the RTCPeerConnection");
+          for (const track of localStream.getTracks()) {
+            mpc.addTrack(track, localStream);
+          }
+        }
       }
 
-      // We need to set the remote description to the received SDP offer
-      // so that our local WebRTC layer knows how to talk to the caller.
-      var desc = new RTCSessionDescription(msg.sdp);
+      // An offer may come in while we are busy processing SRD(answer).
+      // In this case, we will be in "stable" by the time the offer is processed
+      // so it is safe to chain it on our Operations Chain now.
+      const readyForOffer =
+          !makingOffer.current &&
+          (mpc.signalingState == "stable" || isSettingRemoteAnswerPending.current);
+      const offerCollision = description.type == "offer" && !readyForOffer;
 
-      // If the connection isn't stable yet, wait for it...
-      if (mpc.signalingState != "stable") {
-        log("  - But the signaling state isn't stable, so triggering rollback");
-
-        // Set the local and remove descriptions for rollback; don't proceed
-        // until both return.
-        await Promise.all([
-          mpc.setLocalDescription({type: "rollback"}),
-          mpc.setRemoteDescription(desc)
-        ]);
+      ignoreOffer.current = !polite && offerCollision;
+      if (ignoreOffer.current) {
         return;
-      } else {
-        log ("  - Setting remote description");
-        await mpc.setRemoteDescription(desc);
       }
+      isSettingRemoteAnswerPending.current = description.type == "answer";
+      await mpc.setRemoteDescription(description); // SRD rolls back as needed
+      isSettingRemoteAnswerPending.current = false;
 
-      // Just Add the camera stream to the RTCPeerConnection
-      if (mpc.getTransceivers().length <= 2 && localStream) {
-        log("Add the local camera stream to the RTCPeerConnection");
-        localStream.getTracks().forEach(
-          track => mpc.addTransceiver(track, {streams: [localStream]})
-        );
+      log(`@@@Description type: ${description.type}`);
+      if (description.type == "offer") {
+        await mpc.setLocalDescription();
+        sendToServer({
+          name: myUsername,
+          target: targetUser,
+          type: "video-offer",
+          sdp: mpc.localDescription
+        });
       };
-
-      log("---> Creating and sending answer to caller");
-      await mpc.setLocalDescription(await mpc.createAnswer());
-
-      sendToServer({
-        name: myUsername,
-        target: targetUser,
-        type: "video-answer",
-        sdp: mpc.localDescription
-      });
-    } // depends on local_video html element, webcamStream
-
-    // Responds to the "video-answer" message sent to the caller
-    // once the callee has decided to accept our request to talk.
-    async function handleVideoAnswerMsg(msg) {
-      log("*** Call recipient has accepted our call");
-
-      // Configure the remote description, which is the SDP payload
-      // in our "video-answer" message.
-      var desc = new RTCSessionDescription(msg.sdp);
-      await myPeerConnection.setRemoteDescription(desc).catch(reportError);
     }
 
     // A new ICE candidate has been received from the other peer. Call
@@ -455,7 +432,10 @@ export const WebRTCContextProvider = ({ children }) => {
       try {
         await myPeerConnection.addIceCandidate(candidate)
       } catch(err) {
-        reportError(err);
+        if (!ignoreOffer.current) {
+          reportError(err);
+          throw err;
+        }
       }
     }
 
@@ -470,7 +450,6 @@ export const WebRTCContextProvider = ({ children }) => {
     // signaling information during negotiations leading up to a video
     // call.
     socket.on('video-offer', handleVideoOfferMsg);  // Invitation and offer to chat
-    socket.on('video-answer', handleVideoAnswerMsg); // Callee has answered our offer
     socket.on('new-ice-candidate', handleNewICECandidateMsg); // A new ICE candidate has been received
     socket.on('hang-up', handleHangUpMsg); // The other peer has hung up the call
 
@@ -480,11 +459,21 @@ export const WebRTCContextProvider = ({ children }) => {
       socket.off('receive-a-match', inviteToCall);
 
       socket.off('video-offer', handleVideoOfferMsg);
-      socket.off('video-answer', handleVideoAnswerMsg);
       socket.off('new-ice-candidate', handleNewICECandidateMsg);
       socket.off('hang-up', handleHangUpMsg);
     }
   }, [socket, myPeerConnection, myUsername, targetUsername, localStream, availableUsers, sendToServer, closeVideoCall]);
+
+  const joinConv = useCallback(async () => {
+    socket.emit('join', {
+      name: myUsername,
+    });
+  }, [socket, myUsername, createPeerConnection, localStream]);
+
+  const stopConv = useCallback(() => {
+    closeVideoCall();
+    socket.emit('stop');
+  }, [socket, closeVideoCall]);
 
 
   return (
