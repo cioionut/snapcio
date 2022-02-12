@@ -126,7 +126,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     setLocalStream
   } = useContext(StreamsContext);
 
-  const flipHorizontal = useRef(hFlip);
+  const [ flipHorizontal, setFlipHorizontal ] = useState(hFlip);
   const selfVideo = useRef(null);
   const canvasRef = useRef(null);
   const videoWraperRef = useRef(null);
@@ -181,7 +181,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       const tfVideo = tf.browser.fromPixels(video);
       const vInput = tf.image.resizeBilinear(tfVideo, [videoHeight, videoWidth]);
       const predictions = await model.estimateFaces(
-        vInput, returnTensors, flipHorizontal.current, annotateBoxes);
+        vInput, returnTensors, flipHorizontal, annotateBoxes);
       
       tf.dispose(tfVideo);
       tf.dispose(vInput);
@@ -194,7 +194,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         drawPredictions(predictions, ctx, videoWidth, videoHeight, returnTensors, annotateBoxes)
       });
     }
-  }, [selfVideo, canvasRef]);
+  }, [selfVideo, canvasRef, flipHorizontal]);
 
   //  Load blazeface
   const runFaceDetect = useCallback(async () => {
@@ -239,8 +239,10 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       // check for rear camera
       const selectedVSrcCap = mediaSrc.getCapabilities();
       if (selectedVSrcCap?.facingMode.length > 0) {
-        if (selectedVSrcCap?.facingMode === 'environment') {
-          flipHorizontal.current = false;
+        if (selectedVSrcCap?.facingMode[0] === 'environment') {
+          setFlipHorizontal(false);
+        } else {
+          setFlipHorizontal(true);
         }
       }
     }
@@ -387,7 +389,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       {
         devicePermission &&
         <>
-          <video className={flipHorizontal.current ? 'video-hflip' : ''} ref={selfVideo}/>
+          <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
         </>
       }
