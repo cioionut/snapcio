@@ -254,6 +254,9 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       const currentTrack = audioTracks ? audioTracks[0] : undefined;
       const mediaSrc = audioSources.find(mediaSrc => mediaSrc.label === currentTrack.label);
       setAudioInputSelect(mediaSrc.deviceId);
+      // check for echo cancellation
+      // const selectedASrcCap = mediaSrc.getCapabilities();
+      // console.log(selectedASrcCap);
     }
   }, [audioSources, localStream]);
 
@@ -311,7 +314,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     const constraints = {
       audio: {
         deviceId: audioInSelect ? {exact: audioInSelect} : undefined, 
-        echoCancellation: true
+        echoCancellation: {exact: true},
+        noiseSuppression: {exact: true}
       },
       video: {
         deviceId: vSelect ? {exact: vSelect} : undefined,

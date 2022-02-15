@@ -80,6 +80,11 @@ export default function OtherVideo() {
           height: { xs: 300, md: 720 },
           justifyContent: 'center',
           alignItems: 'center',
+
+          // clip video
+          position: 'relative',
+          zIndex: -100,
+          overflow: 'hidden'
         }}>
           <video ref={otherVideo} controls/>
         </Box>
@@ -90,7 +95,7 @@ export default function OtherVideo() {
       <style jsx>{`
         video {
           width: 100%;
-          height: 100%;
+          height: auto;
         }
         .video-hflip {
             transform: rotateY(180deg);
