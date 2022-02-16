@@ -25,6 +25,9 @@ import Link from './Link';
 const pages = {'Live': "/", "Video": "/video", 'Messenger': "/"};
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
+const siteName = 'Invorbe';
+
+
 const ResponsiveAppBar = () => {
   const theme = useTheme();
   const colorMode = React.useContext(ColorModeContext);
@@ -85,7 +88,7 @@ const ResponsiveAppBar = () => {
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
           >
-            Snapcio
+            { siteName }
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -128,7 +131,7 @@ const ResponsiveAppBar = () => {
             component="div"
             sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
           >
-            Snapcio
+            { siteName }
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>

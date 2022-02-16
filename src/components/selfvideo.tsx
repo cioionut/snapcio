@@ -376,41 +376,34 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
   return (
     <>
       <Box sx={{
-        mx: { md: 1 },
-        display: 'flex',
-        height: { xs: 300, md: 720 },
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: !devicePermission ? 'black' : 'transparent'
-      }}
-        ref={videoWraperRef}
-      >
-      {
-        !devicePermission && devicePermission !== undefined
-        ? <Button 
-            variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}
-          >
-            GO LIVE
-          </Button> 
-        : (devicePermission === undefined) && <CircularProgress/>
-      }
-      {
-        devicePermission &&
-        <Box sx={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: { xs: 300, md: 720 },
+          backgroundColor: !devicePermission ? 'black' : 'transparent',
+          height: '100%',
 
           // clip video
           position: 'relative',
-          zIndex: -100,
-          overflow: 'hidden'
-        }}>
+          overflow: 'hidden',
+          maxWidth: '100%'
+        }}
+        ref={videoWraperRef}
+      >{
+        devicePermission &&
+        <>
           <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
-        </Box>
-      }
+        </>
+        }
+        {
+          !devicePermission && devicePermission !== undefined
+          ? <Button 
+              variant="contained" color="error" onClick={handleStartDevice} startIcon={<PhotoCameraFrontIcon />}
+            >
+              GO LIVE
+            </Button> 
+          : (devicePermission === undefined) && <CircularProgress/>
+        }
       </Box>
       <Box sx={{ mt: 1 }}>
         { 
@@ -421,41 +414,52 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
           <SettingsIcon color={showSettings ? 'primary' : 'inherit'} />
         </IconButton>
       </Box>
-      
-      {
-        (showSettings && videoSelect != '') &&
-        <Box sx={{ my: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel id="select-camera-source-label">Camera source</InputLabel>
-            <Select
-              labelId="select-camera-source-label"
-              id="select-camera-source"
-              value={videoSelect}
-              label="Select Camera"
-              onChange={handleChangeVideo}
-            >
-              { videoOptions }
-            </Select>
-          </FormControl>
-        </Box>
-      }
-      {
-        (showSettings && audioInputSelect != '') &&
-        <Box sx={{ my: 2 }}>
-          <FormControl fullWidth>
-            <InputLabel id="select-audio-source-label">Audio source</InputLabel>
-            <Select
-              labelId="select-audio-source-label"
-              id="select-audio-source"
-              value={audioInputSelect}
-              label="Select audio"
-              onChange={handleChangeAudioInput}
-            >
-              { audioOptions }
-            </Select>
-          </FormControl>
-        </Box>
-      }
+
+      {/* media settings */}
+      <Box sx={{
+        mx: '1',
+        maxWidth: '70%'
+        // position: 'absolute',
+      }}>
+        {
+          (showSettings && videoSelect != '') &&
+          <Box sx={{ 
+            my: 2,
+          }}>
+            <FormControl fullWidth>
+              <InputLabel id="select-camera-source-label">Camera source</InputLabel>
+              <Select
+                labelId="select-camera-source-label"
+                id="select-camera-source"
+                value={videoSelect}
+                label="Select Camera"
+                onChange={handleChangeVideo}
+              >
+                { videoOptions }
+              </Select>
+            </FormControl>
+          </Box>
+        }
+        {
+          (showSettings && audioInputSelect != '') &&
+          <Box sx={{ 
+            my: 2,
+          }}>
+            <FormControl fullWidth>
+              <InputLabel id="select-audio-source-label">Audio source</InputLabel>
+              <Select
+                labelId="select-audio-source-label"
+                id="select-audio-source"
+                value={audioInputSelect}
+                label="Select audio"
+                onChange={handleChangeAudioInput}
+              >
+                { audioOptions }
+              </Select>
+            </FormControl>
+          </Box>
+        }
+      </Box>
 
       {/* show stats about camera */}
       {
@@ -470,18 +474,15 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
       <style jsx>{`
         video {
-          // min-width: 100%; 
-          // min-height: 100%;
-          // width: auto; 
-          // height: auto; 
-          // z-index: -100;
-          // background-size: cover;
-          // overflow: hidden;
-
-          // width: auto;
-          // height: auto;
-          width: 100%;
-          height: auto;
+          position: relative;
+          width: 101%;
+          height: 101%;
+          left: -.5%;
+          top: -.5%;
+          max-width: 101%;
+          max-height: 101%;
+          background: #000;
+          object-fit: cover;
         }
         .video-hflip {
             -webkit-transform: scaleX(-1);

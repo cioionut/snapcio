@@ -52,8 +52,7 @@ export default function OtherVideo() {
     mx: { md: 1 },
     display: 'flex',
     flexDirection: 'column',
-    height: { xs: 300, md: 720 },
-    // justifyContent: 'center',
+    height: '100%',
     alignItems: 'center',
     backgroundColor: '#606060FF',
     // backgroundImage: 'url("/broken_stream.gif")',
@@ -77,25 +76,34 @@ export default function OtherVideo() {
         ? loadingVideo
         : <Box sx={{
           display: 'flex',
-          height: { xs: 300, md: 720 },
           justifyContent: 'center',
           alignItems: 'center',
+          height: '100%',
+          // height: { xs: 300, md: 720 },
 
           // clip video
           position: 'relative',
-          zIndex: -100,
-          overflow: 'hidden'
-        }}>
-          <video ref={otherVideo} controls/>
-        </Box>
+          // zIndex: -100,
+          overflow: 'hidden',
+          maxWidth: '100%'
+          }}>
+            <video ref={otherVideo} controls/>
+          </Box>
       }
         
         
 
       <style jsx>{`
         video {
-          width: 100%;
-          height: auto;
+          position: relative;
+          width: 101%;
+          height: 101%;
+          left: -.5%;
+          top: -.5%;
+          max-width: 101%;
+          max-height: 101%;
+          background: #000;
+          object-fit: cover;
         }
         .video-hflip {
             transform: rotateY(180deg);

@@ -92,26 +92,49 @@ const VChat = () => {
     <>
     <Container maxWidth={false} sx={{ px: { xs: 0 }, mb: { xs: 20 } }}>
       {/* small screens */}
-      <Box sx={{ display: { md: 'none' } }}>
-        <Box sx={{ mt: 0 }}>
+      <Box sx={{ 
+        display: { md: 'none' },
+        flexDirection: 'row',
+        justifyContent: 'center',
+      }}>
+        <Box sx={{ 
+          mt: 0,
+          height: { xs: 300, md: 720 },
+        }}>
           <OtherVideo/>
         </Box>
-        <Box sx={{ mb: 1 }}>
+        <Box sx={{ 
+          mb: 1,
+          height: { xs: 300, md: 720 },
+        }}>
           <SelfVideo hFlip={true}/>
         </Box>
       </Box>
 
       {/* large screens */}
-      <Box sx={{ display: { xs: 'none', md: 'block'} }}>
-        <Grid sx={{ my: 1}} container spacing={2}>
-          <Grid item xs={6}>
+      <Container maxWidth='xl' sx={{ 
+          height: { xs: 300, md: 720 },
+      }}>
+        <Box sx={{ 
+          display: { xs: 'none', md: 'flex'},
+          flexDirection: 'row',
+          justifyContent: 'center',
+          height: '100%'
+          }}>
+          <Box sx={{ 
+            mt: 1,
+            width: '100%'
+          }}>
             <OtherVideo/>
-          </Grid>
-          <Grid item xs={6}>
+          </Box>
+          <Box sx={{ 
+            mt: 1,
+            width: '100%'
+          }}>
             <SelfVideo hFlip={true}/>
-          </Grid>          
-        </Grid>
-      </Box>
+          </Box>
+        </Box>
+      </Container>
     </Container>
 
     <Container sx={{ 
