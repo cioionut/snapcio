@@ -112,11 +112,12 @@ const VChat = () => {
       </Box>
 
       {/* large screens */}
-      <Container maxWidth='xl' sx={{ 
-          height: { xs: 300, md: 720 },
+      <Container maxWidth='xl' sx={{
+        display: { xs: 'none', md: 'block'},
+        height: { xs: 300, md: 720 },
       }}>
-        <Box sx={{ 
-          display: { xs: 'none', md: 'flex'},
+        <Box sx={{
+          display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
           height: '100%'
