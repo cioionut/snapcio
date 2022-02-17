@@ -7,7 +7,7 @@ import Head from 'next/head';
 import { useContext, useState, useEffect, useRef, useCallback } from 'react';
 
 // meterial-ui
-import { Box, Button, IconButton, ButtonGroup, Container, Grid, Fab} from '@mui/material';
+import { Box, Button, IconButton, ButtonGroup, Container, Grid, Fab, Paper, TextField } from '@mui/material';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -90,54 +90,73 @@ const VChat = () => {
 
   return (
     <>
-    <Container maxWidth={false} sx={{ px: { xs: 0 }, mb: { xs: 20 } }}>
+    {/* video chat */}
+    <Container maxWidth={false} sx={{ 
+      px: { xs: 0 },
+    }}>
       {/* small screens */}
-      <Box sx={{ 
-        display: { md: 'none' },
-        flexDirection: 'row',
-        justifyContent: 'center',
+      <Container id='smallscreens' maxWidth={false} sx={{
+        display: { xs: 'block', md: 'none'},
+        px: { xs: 0 },
+        // height: { xs: 300, md: 720 },
       }}>
-        <Box sx={{ 
-          mt: 0,
-          height: { xs: 300, md: 720 },
+        <Box sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center'
         }}>
-          <OtherVideo/>
+            <Box sx={{ 
+              height: { xs: 300, md: 720 },
+              width: '100%'
+            }}>
+              <OtherVideo/>
+            </Box>
+            <Box sx={{ 
+              width: '100%'
+            }}>
+              <SelfVideo hFlip={true}/>
+            </Box>
         </Box>
-        <Box sx={{ 
-          mb: 1,
-          height: { xs: 300, md: 720 },
-        }}>
-          <SelfVideo hFlip={true}/>
-        </Box>
-      </Box>
+      </Container>
 
       {/* large screens */}
       <Container maxWidth='xl' sx={{
         display: { xs: 'none', md: 'block'},
-        height: { xs: 300, md: 720 },
+        // width: '80%'
       }}>
         <Box sx={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
           height: '100%'
-          }}>
-          <Box sx={{ 
-            mt: 1,
-            width: '100%'
-          }}>
-            <OtherVideo/>
-          </Box>
-          <Box sx={{ 
-            mt: 1,
-            width: '100%'
-          }}>
-            <SelfVideo hFlip={true}/>
-          </Box>
+        }}>
+            <Box sx={{ 
+              mt: 1,
+              width: '100%'
+            }}>
+              <OtherVideo/>
+            </Box>
+            <Box sx={{ 
+              mt: 1,
+              width: '100%'
+            }}>
+              <SelfVideo hFlip={true}/>
+            </Box>
         </Box>
       </Container>
     </Container>
 
+    <Container id="chatbox" sx={{
+      mt: 1,
+      mb: { xs: 20 }
+    }}>
+      <Paper elevation={3}>
+      </Paper>
+
+    </Container>
+
+
+    {/* conversation control action buttons */}
     <Container sx={{ 
         position: 'fixed',
         bottom: 0, 
@@ -168,7 +187,7 @@ const VChat = () => {
     </Container>
 
     {/* other stats */}
-    { isDevelopment.current &&
+    { isDevelopment.current && false &&
     <Container maxWidth="sm">
       <Box sx={{ my: 1 }}>
         Available Users: {availableUsers.length}

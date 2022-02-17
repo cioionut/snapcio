@@ -126,7 +126,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
     setLocalStream
   } = useContext(StreamsContext);
 
-  const [ flipHorizontal, setFlipHorizontal ] = useState(hFlip);
+  // const [ flipHorizontal, setFlipHorizontal ] = useState(hFlip);
+  const flipHorizontal = useRef(hFlip);
   const selfVideo = useRef(null);
   const canvasRef = useRef(null);
   const videoWraperRef = useRef(null);
@@ -181,7 +182,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       const tfVideo = tf.browser.fromPixels(video);
       const vInput = tf.image.resizeBilinear(tfVideo, [videoHeight, videoWidth]);
       const predictions = await model.estimateFaces(
-        vInput, returnTensors, flipHorizontal, annotateBoxes);
+        vInput, returnTensors, flipHorizontal.current, annotateBoxes);
       
       tf.dispose(tfVideo);
       tf.dispose(vInput);
@@ -194,7 +195,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
         drawPredictions(predictions, ctx, videoWidth, videoHeight, returnTensors, annotateBoxes)
       });
     }
-  }, [selfVideo, canvasRef, flipHorizontal]);
+  }, [selfVideo, canvasRef]);
 
   //  Load blazeface
   const runFaceDetect = useCallback(async () => {
@@ -240,9 +241,10 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       const selectedVSrcCap = mediaSrc.getCapabilities();
       if (selectedVSrcCap?.facingMode.length > 0) {
         if (selectedVSrcCap?.facingMode[0] === 'environment') {
-          setFlipHorizontal(false);
+          // setFlipHorizontal(false);
+          flipHorizontal.current = false;
         } else {
-          setFlipHorizontal(true);
+          flipHorizontal.current = true;
         }
       }
     }
@@ -380,7 +382,8 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: !devicePermission ? 'black' : 'transparent',
-          height: '100%',
+          // height: '100%',
+          height: { xs: 300, md: 720 },
 
           // clip video
           position: 'relative',
@@ -391,7 +394,7 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
       >{
         devicePermission &&
         <>
-          <video className={flipHorizontal ? 'video-hflip' : ''} ref={selfVideo}/>
+          <video className={flipHorizontal.current ? 'video-hflip' : ''} ref={selfVideo}/>
           <canvas style={{position: 'absolute'}} id="predictions" ref={canvasRef}/>
         </>
         }
@@ -405,7 +408,12 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
           : (devicePermission === undefined) && <CircularProgress/>
         }
       </Box>
-      <Box sx={{ mt: 1 }}>
+
+      {/* video controls */}
+      <Box sx={{ 
+        mt: 1,
+        mx: 1,
+      }}>
         { 
           devicePermission &&
           <Button variant="outlined" color="error" onClick={handleStopDevice} startIcon={<StopIcon />}>Stop Live</Button>
@@ -417,9 +425,9 @@ export default function SelfVideo({ defaultMute=true, hFlip=false, faceDetect=fa
 
       {/* media settings */}
       <Box sx={{
-        mx: '1',
-        maxWidth: '70%'
-        // position: 'absolute',
+        mx: 1,
+        // maxWidth: '70%',
+        // position: 'relative',
       }}>
         {
           (showSettings && videoSelect != '') &&

@@ -39,20 +39,21 @@ export default function OtherVideo() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setFakeAvailableUsers((avUsrs) => avUsrs + getRandomInt(-15, 15));
+      setFakeAvailableUsers((avUsrs) => avUsrs + getRandomInt(-5, 15));
     }, 20*1000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    setFakeAvailableUsers(700 + getRandomInt(-15, 15));
+    setFakeAvailableUsers(700 + getRandomInt(-5, 15));
   }, []);
 
   const loadingVideo = <Box sx={{
     mx: { md: 1 },
     display: 'flex',
     flexDirection: 'column',
-    height: '100%',
+    height: { xs: 300, md: 720 },
+
     alignItems: 'center',
     backgroundColor: '#606060FF',
     // backgroundImage: 'url("/broken_stream.gif")',
@@ -78,8 +79,8 @@ export default function OtherVideo() {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100%',
-          // height: { xs: 300, md: 720 },
+          // height: '100%',
+          height: { xs: 300, md: 720 },
 
           // clip video
           position: 'relative',
