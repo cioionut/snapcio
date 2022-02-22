@@ -4,7 +4,7 @@ import Head from 'next/head';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { CacheProvider } from '@emotion/react';
-
+import { amber, deepOrange, grey } from '@mui/material/colors';
 import { useCookies } from "react-cookie";
 
 // local
@@ -53,14 +53,46 @@ function MyApp(props) {
   const theme = React.useMemo(
     () =>
       createTheme({
+        typography: {
+          fontFamily: [
+            '-apple-system',
+            'BlinkMacSystemFont',
+            '"Segoe UI"',
+            'Roboto',
+            '"Helvetica Neue"',
+            'Arial',
+            'sans-serif',
+            '"Apple Color Emoji"',
+            '"Segoe UI Emoji"',
+            '"Segoe UI Symbol"',
+          ].join(','),
+        },
         palette: {
           mode,
-          primary: {
-            main: '#00203FFF',
-          },
-          secondary: {
-            main: '#ADEFD1FF',
-          },
+          ...(mode === 'light'
+          ? {
+              // palette values for light mode
+              primary: { main: '#0095f6' },
+              // divider: amber[200],
+              // text: {
+              //   primary: grey[900],
+              //   secondary: grey[800],
+              // },
+            }
+          : {
+              // palette values for dark mode
+              // primary: { main: '#0095f6' },
+              // primary: deepOrange,
+              // divider: deepOrange[700],
+              // background: {
+              //   default: deepOrange[900],
+              //   paper: deepOrange[900],
+              // },
+              // text: {
+              //   primary: '#fff',
+              //   secondary: grey[500],
+              // },
+            }),
         },
       }),
     [mode],

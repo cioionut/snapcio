@@ -65,7 +65,7 @@ export default function OtherVideo() {
     {
       fakeAvailableUsers !== 700 && 
       <Box sx={{ mt: 10, color: '#D6ED17FF'}}>
-        Available Users: {availableUsers.length * 1000 + fakeAvailableUsers}
+        Available Users: {fakeAvailableUsers} - {availableUsers.length}
       </Box>
     }
   </Box>
@@ -92,8 +92,6 @@ export default function OtherVideo() {
           </Box>
       }
         
-        
-
       <style jsx>{`
         video {
           position: relative;

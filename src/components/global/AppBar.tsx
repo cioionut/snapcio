@@ -25,7 +25,8 @@ import Link from './Link';
 const pages = {'Live': "/", "Video": "/video", 'Messenger': "/"};
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-const siteName = 'Invorbe';
+// const siteName = 'Voorbe';
+const siteName = 'Snapcio';
 
 
 const ResponsiveAppBar = () => {
@@ -69,7 +70,11 @@ const ResponsiveAppBar = () => {
       component={Link}
       key={pageName}
       onClick={handleCloseNavMenu}
-      sx={{ my: 2, color: 'white', display: 'block' }}
+      sx={{ 
+        my: 2, 
+        // color: 'white', 
+        display: 'block'
+      }}
       href={ pageHref }
     >
       {pageName}
@@ -77,7 +82,7 @@ const ResponsiveAppBar = () => {
   ));
 
   return (
-    <AppBar position="static" color="primary" sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+    <AppBar position="static" color="transparent" sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 
@@ -126,16 +131,18 @@ const ResponsiveAppBar = () => {
           
           {/* medium and large screens */}
           <Typography
-            variant="h6"
             noWrap
             component="div"
-            sx={{ mr: 2, display: { xs: 'none', md: 'flex' } }}
+            sx={{ mr: 2, display: { xs: 'none', md: 'flex' }, 
+            fontSize: '1.5rem',
+            fontFamily: 'EB Garamond', 
+            fontWeight: 550 }}
           >
             { siteName }
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            { pageButtons }
+            {/* { pageButtons } */}
           </Box>
           
           {/* display always */}
