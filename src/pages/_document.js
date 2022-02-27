@@ -6,6 +6,7 @@ import createEmotionServer from '@emotion/server/create-instance';
 import createEmotionCache from '../lib/createEmotionCache';
 import theme from '../styles/theme';
 
+import { GA_TRACKING_ID } from '../lib/gtag';
 import { getLanguage } from '../lib/lang';
 
 export default class MyDocument extends Document {  
@@ -57,7 +58,7 @@ export default class MyDocument extends Document {
           {/* <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script> */}
           
           {/* Global Site Tag (gtag.js) - Google Analytics */}
-          {/* <script
+          <script
             async
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
           />
@@ -70,7 +71,7 @@ export default class MyDocument extends Document {
             gtag('config', '${GA_TRACKING_ID}', {
               page_path: window.location.pathname,
             });`,
-          }} /> */}
+          }} />
         </Head>
         <body>
           <Main />
