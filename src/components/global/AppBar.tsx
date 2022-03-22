@@ -82,19 +82,19 @@ const ResponsiveAppBar = () => {
   ));
 
   return (
-    <AppBar position="static" color="transparent" sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+    <AppBar position="static" color="transparent" sx={{ flexGrow: 1, background: 'transparent', boxShadow: 'none' }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
 
           {/* small screens */}
-          <Typography
+          {/* <Typography
             variant="h6"
             noWrap
             component="div"
             sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}
           >
             { siteName }
-          </Typography>
+          </Typography> */}
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
             <IconButton
@@ -147,15 +147,7 @@ const ResponsiveAppBar = () => {
           
           {/* display always */}
           <Box sx={{ flexGrow: 0 }}>
-            <IconButton 
-              sx={{ ml: 1 }} 
-              aria-label="switch between lignt and dark mode"
-              onClick={colorMode.toggleColorMode} color="inherit">
-              {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
-            </IconButton>
-          </Box>
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
+            <Tooltip title="Open Profile">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar 
                   alt="I"
@@ -184,6 +176,15 @@ const ResponsiveAppBar = () => {
                   <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}
+              <MenuItem key={'darkmode'} onClick={handleCloseNavMenu}>
+                <Typography textAlign="center">{'Change theme'}</Typography>
+                <IconButton 
+                  sx={{ ml: 1 }} 
+                  aria-label="switch between lignt and dark mode"
+                  onClick={colorMode.toggleColorMode} color="inherit">
+                  {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+                </IconButton>
+              </MenuItem>
             </Menu>
           </Box>
         </Toolbar>
