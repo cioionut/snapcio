@@ -180,7 +180,19 @@ const ResponsiveAppBar = () => {
           </Box>
           
           {/* display always */}
-          <Box sx={{ flexGrow: 0 }}>
+          {
+            !keycloak.authenticated ?
+              <Button
+              onClick={() => keycloak.login()}
+              sx={{ 
+                my: 2, 
+                // color: 'white', 
+                display: 'block'
+              }}
+            >
+              Sign In
+            </Button> :
+            <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open Profile">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                 <Avatar 
@@ -217,6 +229,9 @@ const ResponsiveAppBar = () => {
               </MenuItem>
             </Menu>
           </Box>
+          }
+
+          
         </Toolbar>
       </Container>
     </AppBar>

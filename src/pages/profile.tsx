@@ -49,10 +49,14 @@ export default function Profile() {
                         Logout
                       </button>
                     )}
-                    {/* <div>
-                      <p>{ keycloak.tokenParsed.given_name }</p>
-                      <p>{ keycloak.tokenParsed.email }</p>
-                    </div> */}
+                    {
+                      keycloak.authenticated &&
+                      <div>
+                        <p>{ keycloak.tokenParsed.given_name }</p>
+                        <p>{ keycloak.tokenParsed.email }</p>
+                      </div>
+                    }
+
                   </div>
                 }
               </Box>
