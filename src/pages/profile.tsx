@@ -40,15 +40,6 @@ export default function Profile() {
                 {
                   initialized &&
                   <div>
-                    <div>{`User is ${
-                      !keycloak.authenticated ? 'NOT ' : ''
-                    }authenticated`}</div>
-
-                    {!!keycloak.authenticated && (
-                      <button type="button" onClick={() => keycloak.logout()}>
-                        Logout
-                      </button>
-                    )}
                     {
                       keycloak.authenticated &&
                       <div>
