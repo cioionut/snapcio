@@ -1,44 +1,55 @@
 import * as React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+
 import { CacheProvider } from '@emotion/react';
-import { amber, deepOrange, grey } from '@mui/material/colors';
 import { useCookies } from "react-cookie";
+import { ReactKeycloakProvider, useKeycloak } from '@react-keycloak/web';
 
 // local
-import createEmotionCache from '../lib/createEmotionCache';
-// import theme from '../styles/theme';
-
-// i18n
 import '../i18n/init';
-// my styles
+import * as gtag from '../lib/gtag';
+import createEmotionCache from '../lib/createEmotionCache';
+
+// import theme from '../styles/theme';
 import '../styles/globalStyles.css';
-// color context
 import ColorModeContext from '../contexts/ColorModeContext';
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
 
-function MyApp(props) {
-  const [cookies, setCookie] = useCookies(['colorMode']);
+const eventLogger = (event, error) => {
+  console.log('onKeycloakEvent', event, error)
+}
 
-  // emotion
+const tokenLogger = (tokens) => {
+  console.log('onKeycloakTokens', tokens)
+}
+
+function MyApp(props) {
   const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
-  // used when logale comes from server
-  if (pageProps.locale)
-    i18next.changeLanguage(pageProps.locale);
-
-  // color mode
   const [mode, setMode] = React.useState('light');
+  const [cookies, setCookie] = useCookies(['colorMode']);
+  const [keycloak, setKeycloak] = useState(null);
 
-  React.useEffect(() => {
+  // used when logale comes from server
+  if (pageProps.locale) {
+    i18next.changeLanguage(pageProps.locale);
+  }
+
+  useEffect(async () => {
+    // set color mode
     const startMode = cookies.colorMode ?? 'light';
     setMode(startMode);
+    // set keycloak
+    const keycloak = (await import('../lib/keycloak')).default;
+    setKeycloak(keycloak);
   }, []);
 
   const colorMode = React.useMemo(() => ({
@@ -114,20 +125,31 @@ function MyApp(props) {
     }
   }, [router.events]);
 
-  return (
-    <CacheProvider value={emotionCache}>
-      <Head>
-        <meta name="viewport" content="initial-scale=1, width=device-width" />
-      </Head>
-      <ColorModeContext.Provider value={colorMode}>
-        <ThemeProvider theme={theme}>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          <CssBaseline />
-          <Component {...pageProps} />
-        </ThemeProvider>
-      </ColorModeContext.Provider>
-    </CacheProvider>
-  );
+  if (keycloak !== null)
+    return (
+      <ReactKeycloakProvider
+        authClient={keycloak}
+        onEvent={eventLogger}
+        onTokens={tokenLogger}
+      >
+      <CacheProvider value={emotionCache}>
+        <Head>
+          <meta name="viewport" content="initial-scale=1, width=device-width" />
+        </Head>
+        <ColorModeContext.Provider value={colorMode}>
+          <ThemeProvider theme={theme}>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+            <CssBaseline />
+
+            <Component {...pageProps} />
+
+          </ThemeProvider>
+        </ColorModeContext.Provider>
+      </CacheProvider>
+      </ReactKeycloakProvider>
+    );
+
+  return null;
 }
 
 MyApp.propTypes = {

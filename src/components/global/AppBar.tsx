@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useRouter } from 'next/router';
+
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -11,11 +13,17 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import Divider from '@mui/material/Divider';
+import ListItemIcon from '@mui/material/ListItemIcon';
 
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import Logout from '@mui/icons-material/Logout';
+import Person from '@mui/icons-material/Person';
 
 import { useTheme } from '@mui/material/styles';
+
+import { useKeycloak } from '@react-keycloak/web';
 
 // color context
 import ColorModeContext from '../../contexts/ColorModeContext';
@@ -23,13 +31,15 @@ import Link from './Link';
 
 
 const pages = {'Live': "/", "Video": "/video", 'Messenger': "/"};
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const settings = {'Profile': '/profile', 'Account': '/', 'Dashboard': '/', 'Logout': '/'};
 
 // const siteName = 'Voorbe';
 const siteName = 'Snapcio';
 
 
 const ResponsiveAppBar = () => {
+  const { keycloak, initialized } = useKeycloak();
+  const router = useRouter();
   const theme = useTheme();
   const colorMode = React.useContext(ColorModeContext);
 
@@ -54,11 +64,11 @@ const ResponsiveAppBar = () => {
   const pageMenuItems = Object.entries(pages).map(([pageName, pageHref]) => (
     <MenuItem key={pageName} onClick={handleCloseNavMenu}>
       <Link 
-          style={{
-              textDecoration: 'none', 
-              color: '#000'
-          }}
-          href={pageHref}
+        style={{
+          textDecoration: 'none', 
+        }}
+        sx={{ color: 'text.primary' }}
+        href={pageHref}
       >
         {pageName}
       </Link>
@@ -80,6 +90,23 @@ const ResponsiveAppBar = () => {
       {pageName}
     </Button>
   ));
+  const logout = !!keycloak.authenticated &&
+  <MenuItem key={'logout'} onClick={() => keycloak.logout()}>
+    <ListItemIcon>
+      <Logout fontSize="small" />
+    </ListItemIcon>
+    Logout
+  </MenuItem>;
+  const settingsMenuItems = [
+    <MenuItem key={'profile'} onClick={() => router.push('/profile')}>
+      <ListItemIcon>
+        <Person fontSize="small" />
+      </ListItemIcon>
+      Profile
+    </MenuItem>,
+    logout,
+    <Divider key={'divider'} />,
+  ]
 
   return (
     <AppBar position="static" color="transparent" sx={{ flexGrow: 1, background: 'transparent', boxShadow: 'none' }}>
@@ -130,19 +157,26 @@ const ResponsiveAppBar = () => {
           </Box>
           
           {/* medium and large screens */}
-          <Typography
-            noWrap
-            component="div"
-            sx={{ mr: 2, display: { xs: 'none', md: 'flex' }, 
-            fontSize: '1.5rem',
-            fontFamily: 'EB Garamond', 
-            fontWeight: 550 }}
+          <Link 
+            style={{
+              textDecoration: 'none', 
+            }}
+            sx={{ color: 'text.primary' }}
+            href='/'
           >
-            { siteName }
-          </Typography>
-
+            <Typography
+              noWrap
+              component="div"
+              sx={{ mr: 2, display: { xs: 'none', md: 'flex' }, 
+              fontSize: '1.5rem',
+              fontFamily: 'EB Garamond', 
+              fontWeight: 550 }}
+            >
+              { siteName }
+            </Typography>
+          </Link>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {/* { pageButtons } */}
+            { pageButtons }
           </Box>
           
           {/* display always */}
@@ -171,12 +205,8 @@ const ResponsiveAppBar = () => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseNavMenu}>
-                  <Typography textAlign="center">{setting}</Typography>
-                </MenuItem>
-              ))}
-              <MenuItem key={'darkmode'} onClick={handleCloseNavMenu}>
+              {settingsMenuItems}
+              <MenuItem key={'darkmode'}>
                 <Typography textAlign="center">{'Change theme'}</Typography>
                 <IconButton 
                   sx={{ ml: 1 }} 
